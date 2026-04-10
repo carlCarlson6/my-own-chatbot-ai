@@ -2,36 +2,47 @@
 
 My own chatbot web app.
 
-## Tech Stack
+## Current Repo State
 
-### Backend
-- **.NET** with **Microsoft Orleans** (actor model framework)
+- The public API contract lives in `contracts/chatbot-api.openapi.yml` and is the source of truth.
+- The checked-in implementation is currently a **.NET 8 Minimal API** backend under `backend/src/MyOwnChatbotAi.Api`.
+- Conversation and model endpoints are wired to an **in-memory stub service** for local development.
+- A frontend app has **not** been scaffolded in the repo yet.
+- **Orleans** orchestration and **Ollama** integration are still planned next steps rather than active runtime dependencies.
 
-### Frontend
-- **Vite** + **React** + **TypeScript**
-- **Tailwind CSS** for styling
-- **Zustand** for state management
-- **Zod** for schema validation
+## Technologies
 
-### AI
-- **Ollama** for LLM inference
+### Implemented now
+- **.NET 8** Minimal APIs
+- **OpenAPI 3.0** contract-first API design
 
-## Current Status
+### Planned next layers
+- **Microsoft Orleans** for conversation orchestration and state ownership
+- **Vite** + **React** + **TypeScript** frontend
+- **Tailwind CSS**, **Zustand**, and **Zod**
+- **Ollama** for local model inference
 
-- Initial implementation has started with a **contract-first** scaffold.
-- Canonical API contract: `contracts/chatbot-api.openapi.yml`
-- Scaffolding plan: `docs/scaffolding-plan.md`
-- Secure backend/Ollama execution plan: `docs/backend-ollama-communication-plan.md`
-- The backend scaffold now exists under `backend/` and includes a working minimal chat API stub.
-- The frontend scaffold is the next step; the local JavaScript toolchain currently needs a small npm/Node repair or workaround.
+## Verified Commands
 
-## Verified Backend Commands
+| Purpose | Command | Observed result |
+| --- | --- | --- |
+| Build backend | `dotnet build backend/src/MyOwnChatbotAi.sln` | Succeeds with `0` warnings and `0` errors |
+| Run API | `dotnet run --project backend/src/MyOwnChatbotAi.Api` | Starts the API on `http://localhost:5050` |
+| Smoke check root | `curl http://localhost:5050/` | Returns `{"service":"my-own-chatbot-ai-api","status":"ok"}` |
+| Smoke check models | `curl http://localhost:5050/api/models` | Returns the stubbed `llama3.1` and `mistral` model list |
 
-- `dotnet build backend/src/MyOwnChatbotAi.sln`
-- `dotnet run --project backend/src/MyOwnChatbotAi.Api`
+> There is no frontend `package.json` in the repo yet, so no verified frontend commands are documented.
+> The current solution also does not include a dedicated test project.
+
+## Architecture Boundaries
+
+- `contracts/` defines the published transport contract for backend and future frontend work.
+- `backend/` contains the current Minimal API implementation and the stubbed conversation flow.
+- The future `frontend/` app should call only the backend API.
+- Ollama should remain a backend-only integration boundary when it is added.
 
 ## Next Steps
 
-1. Add the Orleans-backed conversation flow behind the current in-memory service
-2. Scaffold the `Vite + React + TypeScript` frontend under `frontend/`
-3. Wire the first end-to-end send-message flow
+1. Replace the in-memory conversation stub with Orleans-backed orchestration.
+2. Add the backend-only Ollama client and real model/message flows.
+3. Scaffold the `Vite + React + TypeScript` frontend and then verify its real run/build commands.

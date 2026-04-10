@@ -2,9 +2,11 @@
 
 ## Project
 
-`my-own-chatbot-ai` is a personal chatbot web app. The repository is currently an **early scaffold** with documentation only, so treat the structure below as the planned direction until real projects and source files are added.
+`my-own-chatbot-ai` is a personal chatbot web app. The repository now includes a **contract-first scaffold** with a checked-in `.NET 8` Minimal API backend in `backend/src/MyOwnChatbotAi.Api` and the canonical API contract in `contracts/chatbot-api.openapi.yml`.
 
-See `README.md` for the current stack summary.
+There is no checked-in frontend app yet, and the current backend still uses an in-memory stub for chat flows. Treat the Orleans, React, and Ollama notes below as the planned direction for the next implementation steps.
+
+See `README.md` for the current verified repo summary.
 
 ## Planned Architecture
 
@@ -16,9 +18,19 @@ Keep frontend and backend concerns clearly separated, and document integration b
 
 ## Build and Test
 
-- There are currently **no verified build, run, or test commands** in this repo.
-- Before suggesting commands, first check for real project files such as `package.json`, `.sln`, `.csproj`, or `vite.config.*`.
-- When scaffolding the app, add the verified commands to `README.md` and keep this file in sync.
+- Verified backend commands:
+  - `dotnet build backend/src/MyOwnChatbotAi.sln`
+  - `dotnet run --project backend/src/MyOwnChatbotAi.Api`
+- Verified development URL: `http://localhost:5050`
+- There is currently **no frontend `package.json`** and **no dedicated test project** checked into the repo.
+- Before suggesting additional commands, still check for real project files such as `package.json`, `.sln`, `.csproj`, or `vite.config.*`.
+- Keep `README.md` and this file in sync as more verified commands are added.
+
+## Planning Documents
+
+- When creating or updating an implementation, scaffolding, or workflow plan in `docs/`, include a `## Pre-Implementation Change Review` section near the top.
+- That section should instruct the next agent to inspect the latest repo state, compare it against the plan, update any stale steps or statuses, and only then begin implementation.
+- Treat this as a required review gate whenever repo changes may have happened since the plan was last updated.
 
 ## Conventions
 

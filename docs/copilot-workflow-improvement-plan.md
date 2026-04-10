@@ -19,9 +19,9 @@ The repository already has a solid baseline:
 - `/.github/prompts/scaffold-backend-slice.prompt.md`
 - `/.github/prompts/update-project-documentation.prompt.md`
 
-The current setup is good for guidance, but there are a few gaps:
+The current setup is good for guidance, but there are a few remaining gaps:
 
-1. `/.github/copilot-instructions.md` is slightly out of sync with the actual repo state.
+1. The main repo guidance is aligned now, but it still needs to stay in sync as the repo evolves.
 2. There is no dedicated Copilot guidance for local dev setup and environment issues.
 3. There is no testing-focused instruction file yet.
 4. There is no repo-specific custom agent.
@@ -29,11 +29,22 @@ The current setup is good for guidance, but there are a few gaps:
 
 ---
 
+## Pre-Implementation Change Review
+
+Before implementing recommendations from this plan, first re-check the current repo state so the workflow guidance stays aligned with reality.
+
+### Required review steps
+
+1. Inspect `README.md`, `/.github/`, `docs/`, and any newly added prompt/agent/instruction files.
+2. Compare the repo's current Copilot setup against this plan and note any completed, renamed, or superseded items.
+3. Update this document first if priorities, file lists, or status notes have drifted.
+4. Only after that review should the implementation work begin.
+
 ## Main Recommendations
 
 ### Do now
 
-- **Improve the current instructions** so they reflect the real repo and verified commands.
+- **Keep the current instructions synchronized** as verified commands and repo structure change.
 - **Add more reusable prompts** for repeated project workflows.
 - **Create one custom repo agent** to keep Copilot behavior focused and consistent.
 
@@ -80,19 +91,12 @@ Suggested responsibilities:
 ## Phase 1 — Align existing guidance
 
 ### Goal
-Make the current Copilot instructions trustworthy and synchronized with the real repository.
+Keep the current Copilot instructions trustworthy and synchronized as the repository evolves.
 
 ### Tasks
 
-1. Update `/.github/copilot-instructions.md` to reflect the actual current state:
-   - backend scaffold exists under `backend/`
-   - API contracts live in `contracts/`
-   - docs live in `docs/`
-   - verified backend commands already exist in `README.md`
-   - frontend is planned but not yet fully scaffolded
-
+1. Review `/.github/copilot-instructions.md` and `README.md` whenever backend/frontend structure or verified commands change.
 2. Ensure `README.md` and `/.github/copilot-instructions.md` do not contradict each other.
-
 3. Keep instruction scope specific and avoid unnecessarily broad `applyTo` patterns.
 
 ### Expected outcome
