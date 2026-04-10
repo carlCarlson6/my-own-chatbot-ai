@@ -16,6 +16,7 @@ applyTo: "**/*.{cs,json}"
 - Use **Minimal APIs** rather than MVC controllers.
 - Define each endpoint in a **separate file** to keep routes easy to discover and maintain.
 - Keep endpoint mapping thin: request parsing, validation, delegation to the relevant application flow, and response shaping only.
+- Use The example **Example Endpoint File Structure** on the **Examples* section as a reference for how to structure endpoint files and related DTOs.
 
 ## Orleans and Business Logic
 
