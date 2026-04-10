@@ -12,7 +12,7 @@ Review the `.github/` Copilot customization folder and produce a structured impr
 ## What this workflow does
 
 1. Reads every file in `.github/` to understand the current state
-2. Analyses the setup for issues across six categories
+2. Analyses the setup for issues across seven categories
 3. Writes a dated improvement plan to `plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md`
 4. Registers the plan in `README.md`
 5. **Stops** — does not implement any change
@@ -34,6 +34,10 @@ Read every file listed below before forming any opinion. Do not skip files.
 
 **Prompts** (`.github/prompts/`)
 - Every `*.prompt.md` file present
+
+**Skills** (`.github/skills/` — may not exist yet)
+- Every `*.skill.md` or `*.yml` file present, if the folder exists
+- Note if the folder is absent entirely
 
 Also read:
 - `README.md` — to understand the current project state and verified commands
@@ -71,7 +75,13 @@ For each category, list specific findings with the file name and the problem or 
 - Are existing prompts complete (do they have verification steps, output format, commit instructions)?
 - Are there prompts referenced in agent files that do not exist yet?
 
-### Category 6 — Staleness and accuracy
+### Category 6 — Skills coverage
+- Does `.github/skills/` exist? If not, is that a gap?
+- A **skill** is appropriate for a reusable, self-contained capability that can be invoked across many contexts (e.g. "explain this code", "generate a test", "summarise a PR"). It differs from a prompt (which is a guided multi-step workflow) and an agent (which is a stateful autonomous executor).
+- Are there capabilities currently implemented as prompts or agent instructions that would be better as skills (short, single-purpose, reusable)?
+- Are there missing skills for common tasks in this project (e.g. "explain an Orleans grain", "validate OpenAPI schema", "generate Zod schema from OpenAPI")?
+
+### Category 7 — Staleness and accuracy
 - Do any files reference paths, commands, plans, or features that no longer exist?
 - Are verified commands still accurate against the real `package.json`, `.sln`, and `vite.config.*`?
 - Do instruction files still match the actual project structure and tech stack?
@@ -83,7 +93,7 @@ For each category, list specific findings with the file name and the problem or 
 For each finding, assign:
 - **Impact**: High / Medium / Low
 - **Effort**: Small (< 30 min) / Medium (30–90 min) / Large (> 90 min)
-- **Category**: one of the six above
+- **Category**: one of the seven above
 
 Group findings into:
 - **Must fix** — High impact regardless of effort
@@ -138,7 +148,7 @@ The plan is for human review and approval. It will be executed in a future sessi
 ## Output
 
 Provide a concise summary:
-- **Findings count by category**: e.g. "Redundancy: 2, applyTo: 3, Coverage gaps: 1, Staleness: 1"
+- **Findings count by category**: e.g. "Redundancy: 2, applyTo: 3, Coverage gaps: 1, Skills: 2, Staleness: 1"
 - **Plan created at**: file path
 - **Top 3 must-fix items**: brief list
 - **Next step**: "Review `plans/copilot-config-improvement-<date>-plan.md` and run this plan when ready"
