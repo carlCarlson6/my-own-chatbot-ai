@@ -1,5 +1,3 @@
-import axios from 'axios'
-import type { AxiosError } from 'axios'
 import type { ApiError } from '../types/chat'
 import { apiErrorSchema } from './schemas'
 
@@ -15,32 +13,40 @@ export class ChatApiError extends Error {
   }
 }
 
-// ── Axios instance ─────────────────────────────────────────────────────────────
+// ── Core fetch wrapper ────────────────────────────────────────────────────────
 //
 // baseURL is intentionally empty — in development Vite proxies /api/* to the
-// backend at http://localhost:5050 (see vite.config.ts).  In production nginx
+// backend at http://localhost:5050 (see vite.config.ts). In production nginx
 // does the same proxying.
 
-export const apiClient = axios.create({
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+async function handleResponse(response: Response): Promise<unknown> {
+  const text = await response.text()
+  const body: unknown = text ? JSON.parse(text) : null
 
-// ── Response interceptor — extract typed ApiError from 4xx/5xx ───────────────
-
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error: AxiosError) => {
-    if (error.response?.data) {
-      const parsed = apiErrorSchema.safeParse(error.response.data)
-      if (parsed.success) {
-        throw new ChatApiError(parsed.data)
-      }
-    }
+  if (!response.ok) {
+    const parsed = apiErrorSchema.safeParse(body)
+    if (parsed.success) throw new ChatApiError(parsed.data)
     throw new ChatApiError({
       code: 'UNKNOWN_ERROR',
-      message: (error.message as string | undefined) ?? 'An unexpected error occurred',
+      message: `Request failed with status ${response.status}`,
     })
-  },
-)
+  }
+
+  return body
+}
+
+export async function apiGet(path: string): Promise<unknown> {
+  const response = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  return handleResponse(response)
+}
+
+export async function apiPost(path: string, body: unknown): Promise<unknown> {
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  return handleResponse(response)
+}

@@ -1,4 +1,4 @@
-import { apiClient } from './client'
+import { apiGet, apiPost } from './client'
 import {
   createConversationResponseSchema,
   sendMessageResponseSchema,
@@ -33,18 +33,18 @@ export interface SendMessageRequest {
 export async function createConversation(
   req?: CreateConversationRequest,
 ): Promise<CreateConversationResponse> {
-  const response = await apiClient.post('/api/conversations', req ?? {})
-  return createConversationResponseSchema.parse(response.data)
+  const data = await apiPost('/api/conversations', req ?? {})
+  return createConversationResponseSchema.parse(data)
 }
 
 export async function sendMessage(req: SendMessageRequest): Promise<SendMessageResponse> {
-  const response = await apiClient.post('/api/conversations/send', req)
-  return sendMessageResponseSchema.parse(response.data)
+  const data = await apiPost('/api/conversations/send', req)
+  return sendMessageResponseSchema.parse(data)
 }
 
 export async function getConversationHistory(
   conversationId: string,
 ): Promise<GetConversationHistoryResponse> {
-  const response = await apiClient.get(`/api/conversations/${conversationId}/history`)
-  return getConversationHistoryResponseSchema.parse(response.data)
+  const data = await apiGet(`/api/conversations/${conversationId}/history`)
+  return getConversationHistoryResponseSchema.parse(data)
 }
