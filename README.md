@@ -34,7 +34,7 @@ My own chatbot web app.
 my-own-chatbot-ai/
 ├── backend/          .NET 8 Minimal API + Orleans (planned)
 ├── contracts/        OpenAPI YAML — source of truth for the API contract
-├── docs/             Architecture and workflow planning documents
+├── plans/            Architecture and workflow planning documents
 ├── frontend/         Vite + React + TypeScript SPA
 ├── infrastructure/   Docker, Docker Compose, and Kubernetes configuration
 └── .github/          Copilot instructions and reusable prompts
@@ -106,15 +106,15 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 
 Plans that are partially done or still being executed.
 
-- [`docs/backend-ollama-communication-plan.md`](docs/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: Phases 1–4 ✅ done; Phase 5 verification checklist still pending.
-- [`docs/frontend-chat-ui-plan.md`](docs/frontend-chat-ui-plan.md) — Frontend chat UI implementation plan
+- [`plans/frontend-chat-ui-plan.md`](plans/frontend-chat-ui-plan.md) — Frontend chat UI implementation plan
 
 ### Completed
 
 Plans that have been fully executed and are kept for historical reference.
 
-- [`docs/scaffolding-plan.md`](docs/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration. All 6 steps complete; frontend wiring tracked in `docs/frontend-chat-ui-plan.md`.
-- [`docs/old-plans/copilot-workflow-improvement-plan.md`](docs/old-plans/copilot-workflow-improvement-plan.md) — Copilot workflow improvement plan: dev-setup instructions, testing guidelines, chatbot-builder agent, and prompt cleanup.
+- [`plans/old/backend-ollama-communication-plan.md`](plans/old/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: all 5 phases ✅ done.
+- [`plans/old/scaffolding-plan.md`](plans/old/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration. All 6 steps complete; frontend wiring tracked in `plans/frontend-chat-ui-plan.md`.
+- [`plans/old/copilot-workflow-improvement-plan.md`](plans/old/copilot-workflow-improvement-plan.md) — Copilot workflow improvement plan: dev-setup instructions, testing guidelines, chatbot-builder agent, and prompt cleanup.
 
 ## Next Steps
 

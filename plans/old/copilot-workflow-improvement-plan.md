@@ -37,7 +37,7 @@ Before implementing recommendations from this plan, first re-check the current r
 
 ### Required review steps
 
-1. Inspect `README.md`, `/.github/`, `docs/`, and any newly added prompt/agent/instruction files.
+1. Inspect `README.md`, `/.github/`, `plans/`, and any newly added prompt/agent/instruction files.
 2. Compare the repo's current Copilot setup against this plan and note any completed, renamed, or superseded items.
 3. Update this document first if priorities, file lists, or status notes have drifted.
 4. Only after that review should the implementation work begin.

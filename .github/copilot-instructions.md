@@ -32,7 +32,7 @@ Keep frontend and backend concerns clearly separated, and document integration b
 
 ## Planning Documents
 
-- When creating or updating an implementation, scaffolding, or workflow plan in `docs/`, include a `## Pre-Implementation Change Review` section near the top.
+- When creating or updating an implementation, scaffolding, or workflow plan in `plans/`, include a `## Pre-Implementation Change Review` section near the top.
 - That section should instruct the next agent to inspect the latest repo state, compare it against the plan, update any stale steps or statuses, and only then begin implementation.
 - Treat this as a required review gate whenever repo changes may have happened since the plan was last updated.
 

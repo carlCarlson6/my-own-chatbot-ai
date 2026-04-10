@@ -17,7 +17,7 @@ Before continuing work from this plan, first confirm the repo has not changed si
 
 ### Required review steps
 
-1. Inspect `README.md`, `docs/`, `contracts/`, and the relevant `backend/` or `frontend/` folders.
+1. Inspect `README.md`, `plans/`, `contracts/`, and the relevant `backend/` or `frontend/` folders.
 2. Compare the current repo state against this plan and check for drift in structure, commands, status markers, or dependencies.
 3. Update this plan first if any step is stale, already completed, or needs reordering.
 4. Only after that review should implementation continue.
@@ -52,8 +52,8 @@ Before continuing work from this plan, first confirm the repo has not changed si
 - `SendMessageEndpoint`, `CreateConversationEndpoint`, and `GetConversationHistoryEndpoint` now delegate to the grain via `IGrainFactory`.
 - Max message size (8,000 chars) validated in `SendMessageEndpoint`; clean `ApiError` payloads returned for Ollama failures.
 - `POST /api/conversations/send` now returns a real Ollama-backed reply when Ollama is running.
-- See `docs/backend-ollama-communication-plan.md` for full details.
-- Frontend wiring to the live backend API is tracked separately in `docs/frontend-chat-ui-plan.md`.
+- See `plans/old/backend-ollama-communication-plan.md` for full details.
+- Frontend wiring to the live backend API is tracked separately in `plans/frontend-chat-ui-plan.md`.
 
 ## MVP defaults
 
@@ -69,7 +69,7 @@ Before continuing work from this plan, first confirm the repo has not changed si
 2. [x] Scaffold the backend solution and Minimal API stub
 3. [x] Scaffold the frontend app and verify build/run commands
 4. [x] Add the backend-only Ollama client layer (`IOllamaClient`, `OllamaHttpClient`, `OllamaOptions`)
-5. [x] Add Orleans hosting and conversation grain orchestration (see `docs/backend-ollama-communication-plan.md`)
-6. [x] Frontend chat UI implementation tracked in `docs/frontend-chat-ui-plan.md`
+5. [x] Add Orleans hosting and conversation grain orchestration (see `plans/old/backend-ollama-communication-plan.md`)
+6. [x] Frontend chat UI implementation tracked in `plans/frontend-chat-ui-plan.md`
 
-All immediate next actions are complete. This scaffolding plan is done — further implementation work is tracked in dedicated plans (`docs/frontend-chat-ui-plan.md`, `docs/backend-ollama-communication-plan.md`).
+All immediate next actions are complete. This scaffolding plan is done — further implementation work is tracked in dedicated plans (`plans/frontend-chat-ui-plan.md`, `plans/old/backend-ollama-communication-plan.md`).

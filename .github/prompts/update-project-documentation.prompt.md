@@ -13,14 +13,14 @@ Follow these workspace references first:
 - [Orleans instructions](../instructions/orleans.instructions.md)
 - [API contract instructions](../instructions/api-contracts.instructions.md)
 - [Main README](../../README.md)
-- [Scaffolding plan](../../docs/scaffolding-plan.md)
+- [Scaffolding plan](../../plans/old/scaffolding-plan.md)
 - [API contracts folder](../../contracts/README.md)
 
 Task:
 1. Inspect the current repo state before editing any documentation.
 2. Review the main documentation and customization files, especially:
    - `README.md`
-   - `docs/**/*.md`
+   - `plans/**/*.md`
    - `.github/copilot-instructions.md`
    - `.github/instructions/**/*.md`
    - `.github/prompts/**/*.prompt.md`

@@ -19,9 +19,9 @@ You are a specialized implementation agent for `my-own-chatbot-ai`, a local-firs
    - Read `README.md` for verified structure and commands
    - Read `contracts/chatbot-api.openapi.yml` for the current API shape
    - Read affected files under `backend/` or `frontend/`
-   - Read any relevant planning docs in `docs/`
+   - Read any relevant planning docs in `plans/`
 2. Do **not** assume folder structure or file existence — verify first with file reads or directory listings.
-3. If the task relates to a plan in `docs/`, read the plan, check its status markers, and update any stale steps before beginning work.
+3. If the task relates to a plan in `plans/`, read the plan, check its status markers, and update any stale steps before beginning work.
 4. If a `## Pre-Implementation Change Review` section exists in a planning doc, treat it as a required gate before acting.
 
 ## Instruction Files (Authoritative Guidance)

@@ -1,13 +1,13 @@
 ---
 description: "Use when creating or updating implementation, execution, scaffolding, or workflow plans in repo Markdown docs. Requires a pre-implementation change review/status step so the next agent checks for repo drift before acting."
 name: "Planning Document Guidelines"
-applyTo: "docs/**/*.md"
+applyTo: "plans/**/*.md"
 ---
 # Planning Document Guidelines
 
 ## Location rule
 
-- Every new plan document **must** be created under `docs/`.
+- Every new plan document **must** be created under `plans/`.
 - Never create plan files in the repo root, under `backend/`, `frontend/`, or anywhere else.
 
 ## Naming rule
@@ -24,7 +24,7 @@ applyTo: "docs/**/*.md"
 
 Example entry:
 ```md
-- [`docs/frontend-chat-ui-plan.md`](docs/frontend-chat-ui-plan.md) — Frontend chat UI: wire send-message flow to live backend.
+- [`plans/frontend-chat-ui-plan.md`](plans/frontend-chat-ui-plan.md) — Frontend chat UI: wire send-message flow to live backend.
 ```
 
 ## Required sections rule
