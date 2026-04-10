@@ -36,10 +36,9 @@ public static class SendMessageEndpoint
                 }
                 catch (InvalidOperationException ex)
                 {
-                    return Results.Problem(
-                        detail: ex.Message,
-                        statusCode: StatusCodes.Status502BadGateway,
-                        title: "Upstream model error");
+                    return Results.Json(
+                        new ApiError("upstream_model_error", ex.Message),
+                        statusCode: StatusCodes.Status500InternalServerError);
                 }
             })
             .WithName("SendMessage")
