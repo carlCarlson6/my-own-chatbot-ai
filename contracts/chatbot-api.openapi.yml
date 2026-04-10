@@ -286,6 +286,7 @@ components:
           type: boolean
         description:
           type: string
+          nullable: true
 
     ChatMessageInput:
       type: object

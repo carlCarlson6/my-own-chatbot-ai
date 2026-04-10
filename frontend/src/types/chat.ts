@@ -21,7 +21,7 @@ export interface ModelSummary {
   name: string
   displayName: string
   isDefault: boolean
-  description?: string
+  description?: string | null
 }
 
 export interface ApiError {

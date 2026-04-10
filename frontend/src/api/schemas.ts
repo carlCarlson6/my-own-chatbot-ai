@@ -56,7 +56,7 @@ export const modelSummarySchema = z.object({
   name: z.string(),
   displayName: z.string(),
   isDefault: z.boolean(),
-  description: z.string().optional(),
+  description: z.string().nullish(),
 })
 
 export const listModelsResponseSchema = z.object({
