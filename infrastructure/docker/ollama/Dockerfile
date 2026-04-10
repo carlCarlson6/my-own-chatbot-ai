@@ -4,12 +4,12 @@
 #   DEFAULT_MODEL  — model to pull on first start (default: llama3.2)
 #                    Set to empty string "" to skip the pull.
 #
-# Usage (standalone):
-#   docker build -t chatbot-ollama infrastructure/docker/ollama
+# Usage (standalone — run from repo root):
+#   docker build -f infrastructure/docker/ollama/Dockerfile -t chatbot-ollama .
 #   docker run -p 11434:11434 -v ollama_data:/root/.ollama chatbot-ollama
 #
-# Usage with a specific model:
-#   docker build --build-arg DEFAULT_MODEL=mistral -t chatbot-ollama infrastructure/docker/ollama
+# Usage with a specific model (run from repo root):
+#   docker build -f infrastructure/docker/ollama/Dockerfile --build-arg DEFAULT_MODEL=mistral -t chatbot-ollama .
 
 FROM ollama/ollama:latest
 
