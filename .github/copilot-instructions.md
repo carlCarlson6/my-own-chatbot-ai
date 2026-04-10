@@ -4,7 +4,7 @@
 
 `my-own-chatbot-ai` is a personal chatbot web app. The repository now includes a **contract-first scaffold** with a checked-in `.NET 8` Minimal API backend in `backend/src/MyOwnChatbotAi.Api` and the canonical API contract in `contracts/chatbot-api.openapi.yml`.
 
-There is no checked-in frontend app yet, and the current backend still uses an in-memory stub for chat flows. Treat the Orleans, React, and Ollama notes below as the planned direction for the next implementation steps.
+The frontend is fully scaffolded under `frontend/` using **Vite + React + TypeScript** with Tailwind CSS, Zustand, and Zod. The current backend still uses an in-memory stub for chat flows. Treat the Orleans and Ollama notes below as the planned direction for the next implementation steps.
 
 See `README.md` for the current verified repo summary.
 
@@ -22,7 +22,11 @@ Keep frontend and backend concerns clearly separated, and document integration b
   - `dotnet build backend/src/MyOwnChatbotAi.sln`
   - `dotnet run --project backend/src/MyOwnChatbotAi.Api`
 - Verified development URL: `http://localhost:5050`
-- There is currently **no frontend `package.json`** and **no dedicated test project** checked into the repo.
+- Verified frontend commands:
+  - `cd frontend && npm run build` — produces `frontend/dist/`
+  - `cd frontend && npm run lint` — ESLint passes
+  - `cd frontend && npm run dev` — starts Vite dev server
+- There is currently **no dedicated test project** checked into the repo.
 - Before suggesting additional commands, still check for real project files such as `package.json`, `.sln`, `.csproj`, or `vite.config.*`.
 - Keep `README.md` and this file in sync as more verified commands are added.
 
