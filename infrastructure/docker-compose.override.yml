@@ -27,6 +27,8 @@ services:
       dockerfile: infrastructure/docker/frontend/Dockerfile.dev
     ports:
       - "5173:5173"
+    environment:
+      VITE_BACKEND_URL: http://backend:5050
     volumes:
       - ../frontend:/app
       - /app/node_modules
