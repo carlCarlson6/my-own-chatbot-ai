@@ -34,7 +34,7 @@ My own chatbot web app.
 my-own-chatbot-ai/
 ├── backend/          .NET 8 Minimal API + Orleans
 ├── contracts/        OpenAPI YAML — source of truth for the API contract
-├── plans/            Architecture and workflow planning documents
+├── docs/plans/            Architecture and workflow planning documents
 ├── frontend/         Vite + React + TypeScript SPA
 ├── infrastructure/   Docker, Docker Compose, and Kubernetes configuration
 └── .github/          Copilot agents, instructions, prompts, and skills
@@ -109,16 +109,22 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 
 ### WIP / In-Progress
 
-- [`plans/post-mvp-features-plan.md`](plans/post-mvp-features-plan.md) — Post-MVP features: token streaming, conversation sidebar, and test infrastructure.
+- [`docs/plans/post-mvp-features-plan.md`](docs/plans/post-mvp-features-plan.md) — Post-MVP features: token streaming, conversation sidebar, and test infrastructure.
 
 ### Completed
 
 Plans that have been fully executed and are kept for historical reference.
 
-- [`plans/old/frontend-chat-ui-plan.md`](plans/old/frontend-chat-ui-plan.md) — Frontend chat UI: API client (native fetch + Zod), Zustand store, 6 React components, end-to-end wiring, and UX polish. All 5 phases ✅ done.
-- [`plans/old/backend-ollama-communication-plan.md`](plans/old/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: all 5 phases ✅ done.
-- [`plans/old/scaffolding-plan.md`](plans/old/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration. All 6 steps complete; frontend wiring tracked in `plans/frontend-chat-ui-plan.md`.
-- [`plans/old/copilot-workflow-improvement-plan.md`](plans/old/copilot-workflow-improvement-plan.md) — Copilot workflow improvement plan: dev-setup instructions, testing guidelines, chatbot-builder agent, and prompt cleanup.
+- [`docs/plans/old/frontend-chat-ui-plan.md`](docs/plans/old/frontend-chat-ui-plan.md) — Frontend chat UI: API client (native fetch + Zod), Zustand store, 6 React components, end-to-end wiring, and UX polish. All 5 phases ✅ done.
+- [`docs/plans/old/backend-ollama-communication-plan.md`](docs/plans/old/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: all 5 phases ✅ done.
+- [`docs/plans/old/scaffolding-plan.md`](docs/plans/old/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration. All 6 steps complete; frontend wiring tracked in `docs/plans/frontend-chat-ui-plan.md`.
+- [`docs/plans/old/copilot-workflow-improvement-plan.md`](docs/plans/old/copilot-workflow-improvement-plan.md) — Copilot workflow improvement plan: dev-setup instructions, testing guidelines, chatbot-builder agent, and prompt cleanup.
+
+## Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [`docs/quickstart.md`](docs/quickstart.md) | Mac-native quickstart: prerequisites, Docker Compose setup, local dev, port reference, and useful commands |
 
 ## Next Steps
 
