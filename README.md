@@ -108,6 +108,7 @@ Plans that are partially done or still being executed.
 
 - [`docs/scaffolding-plan.md`](docs/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration (step 6 — frontend wiring to live backend — still pending).
 - [`docs/backend-ollama-communication-plan.md`](docs/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: Phases 1–4 ✅ done; Phase 5 verification checklist still pending.
+- [`docs/frontend-chat-ui-plan.md`](docs/frontend-chat-ui-plan.md) — Frontend chat UI implementation plan
 
 ### Completed
 
