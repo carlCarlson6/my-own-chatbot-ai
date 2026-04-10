@@ -1,4 +1,4 @@
-creat#, Secure Backend ↔ Ollama Communication Plan
+# Secure Backend ↔ Ollama Communication Plan
 
 _Last updated: 2026-04-10_
 
@@ -16,9 +16,14 @@ As of this update, the following already exist:
 
 - `contracts/chatbot-api.openapi.yml` — public API contract source of truth
 - `backend/src/MyOwnChatbotAi.Api/` — Minimal API scaffold
-- `backend/src/MyOwnChatbotAi.Api/Features/Conversations/` — thin conversation endpoints
-- `backend/src/MyOwnChatbotAi.Api/Features/Models/ListModelsEndpoint.cs` — model listing endpoint
-- `backend/src/MyOwnChatbotAi.Api/Services/InMemoryConversationService.cs` — temporary stub service
+- `backend/src/MyOwnChatbotAi.Api/Features/Conversations/` — thin conversation endpoints (still using in-memory stub)
+- `backend/src/MyOwnChatbotAi.Api/Features/Models/ListModelsEndpoint.cs` — model listing endpoint (calls Ollama via `IOllamaClient`, falls back to allowlist)
+- `backend/src/MyOwnChatbotAi.Api/Services/InMemoryConversationService.cs` — stub service for conversation flows
+- `backend/src/MyOwnChatbotAi.Api/Services/Ollama/IOllamaClient.cs` — Ollama client abstraction ✅
+- `backend/src/MyOwnChatbotAi.Api/Services/Ollama/OllamaHttpClient.cs` — HTTP implementation ✅
+- `backend/src/MyOwnChatbotAi.Api/Services/Ollama/OllamaOptions.cs` — configuration type ✅
+- `backend/src/MyOwnChatbotAi.Api/Services/Ollama/OllamaException.cs` — dedicated exception type ✅
+- `backend/src/MyOwnChatbotAi.Api/appsettings.json` — Ollama config block (BaseUrl, DefaultModel, AllowedModels, TimeoutSeconds) ✅
 - `docs/scaffolding-plan.md` — earlier scaffold plan
 
 Current verified backend commands from `README.md`:
@@ -94,7 +99,7 @@ Another agent may have already completed part of the scaffold or changed the bac
 
 ## Execution Plan
 
-### Phase 1 — Preserve the public API boundary
+### Phase 1 — Preserve the public API boundary ✅ Done
 
 **Goal:** keep the existing public contract stable while swapping the internals.
 
@@ -109,7 +114,7 @@ Another agent may have already completed part of the scaffold or changed the bac
 
 ---
 
-### Phase 2 — Add the backend-only Ollama integration layer
+### Phase 2 — Add the backend-only Ollama integration layer ✅ Done
 
 **Goal:** centralize all communication with Ollama in one dedicated client.
 
@@ -140,7 +145,7 @@ Another agent may have already completed part of the scaffold or changed the bac
 
 ---
 
-### Phase 3 — Move chat orchestration into Orleans
+### Phase 3 — Move chat orchestration into Orleans ⏳ Pending
 
 **Goal:** make Orleans the real conversation coordination boundary.
 
@@ -167,17 +172,19 @@ Another agent may have already completed part of the scaffold or changed the bac
 
 ---
 
-### Phase 4 — Security hardening
+### Phase 4 — Security hardening ⏳ Pending
 
 **Goal:** ensure only the backend is intended to communicate with Ollama.
 
-#### Required controls
-- Keep Ollama on loopback only: `127.0.0.1:11434`
-- Do not expose the Ollama base URL to frontend code
-- Enforce a model allowlist in the backend
-- Enforce max input/message size limits
-- Apply request timeouts and cancellation
-- Return clean `ApiError` payloads instead of raw provider errors
+**Already in place:**
+- Ollama bound to loopback only: `127.0.0.1:11434` (via `OllamaOptions.BaseUrl` default)
+- Model allowlist enforced in `OllamaOptions.AllowedModels`
+- Request timeout configured in `OllamaOptions.TimeoutSeconds`
+- `IOllamaClient` isolates Ollama URL from endpoint code
+
+**Still required:**
+- Max input/message size validation in conversation endpoints
+- Clean `ApiError` responses for all Ollama-related failures (not only model listing)
 - Redact or minimize sensitive prompt logging
 
 #### Stronger hardening option (future)

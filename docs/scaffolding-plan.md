@@ -38,9 +38,16 @@ Before continuing work from this plan, first confirm the repo has not changed si
   - `npm run build` — type-checks with `tsc -b` then produces a production bundle
   - `npm run lint` — ESLint passes with zero warnings
 
-### 4. End-to-end integration ⏳ Pending
+### 4. Backend Ollama client layer ✅ Done
+- `IOllamaClient`, `OllamaHttpClient`, `OllamaOptions`, and `OllamaException` are implemented and registered in `Program.cs`.
+- `appsettings.json` holds the default Ollama config (base URL, default model, allowlist, timeout).
+- `ListModelsEndpoint` calls Ollama via `IOllamaClient` and falls back to the configured allowlist when Ollama is unavailable.
+- The in-memory conversation service is still used for `send` and `create` flows.
+
+### 5. End-to-end integration ⏳ Pending
+- Add Orleans hosting and wire conversation orchestration through grains.
+- Refactor `SendMessageEndpoint` and `CreateConversationEndpoint` to delegate to the Orleans grain → Ollama path.
 - Connect the frontend send-message action to the backend endpoint.
-- Replace the current stubbed assistant response with a real Orleans + Ollama flow.
 - See `docs/backend-ollama-communication-plan.md` for the detailed execution plan.
 
 ## MVP defaults
@@ -56,5 +63,6 @@ Before continuing work from this plan, first confirm the repo has not changed si
 1. [x] Finalize the OpenAPI contract
 2. [x] Scaffold the backend solution and Minimal API stub
 3. [x] Scaffold the frontend app and verify build/run commands
-4. [ ] Add Orleans hosting and backend-only Ollama integration (see `docs/backend-ollama-communication-plan.md`)
-5. [ ] Wire the frontend send-message flow to the real backend + Ollama
+4. [x] Add the backend-only Ollama client layer (`IOllamaClient`, `OllamaHttpClient`, `OllamaOptions`)
+5. [ ] Add Orleans hosting and conversation grain orchestration (see `docs/backend-ollama-communication-plan.md`)
+6. [ ] Wire the frontend send-message flow to the real backend + Ollama

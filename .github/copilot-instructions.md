@@ -4,7 +4,7 @@
 
 `my-own-chatbot-ai` is a personal chatbot web app. The repository now includes a **contract-first scaffold** with a checked-in `.NET 8` Minimal API backend in `backend/src/MyOwnChatbotAi.Api` and the canonical API contract in `contracts/chatbot-api.openapi.yml`.
 
-The frontend is fully scaffolded under `frontend/` using **Vite + React + TypeScript** with Tailwind CSS, Zustand, and Zod. The current backend still uses an in-memory stub for chat flows. Treat the Orleans and Ollama notes below as the planned direction for the next implementation steps.
+The frontend is fully scaffolded under `frontend/` using **Vite + React + TypeScript** with Tailwind CSS, Zustand, and Zod. The backend Ollama client layer (`IOllamaClient`, `OllamaHttpClient`, `OllamaOptions`) is implemented and registered. Conversation endpoints still use an in-memory stub; the send-message flow is not yet wired to Ollama. Orleans orchestration is the planned next backend step. Treat the Orleans notes below as the planned direction for that next implementation step.
 
 See `README.md` for the current verified repo summary.
 

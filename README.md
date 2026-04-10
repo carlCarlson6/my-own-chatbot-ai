@@ -5,18 +5,20 @@ My own chatbot web app.
 ## Current Repo State
 
 - The public API contract lives in `contracts/chatbot-api.openapi.yml` and is the source of truth.
-- The checked-in implementation is currently a **.NET 8 Minimal API** backend under `backend/src/MyOwnChatbotAi.Api`.
-- Conversation and model endpoints are wired to an **in-memory stub service** for local development.
+- The checked-in implementation is a **.NET 8 Minimal API** backend under `backend/src/MyOwnChatbotAi.Api`.
+- **Conversation endpoints** (`create`, `send`, `history`) use an **in-memory stub service** for local development.
+- **Model listing** (`GET /api/models`) calls **Ollama** directly via the backend client layer, with an automatic fallback to the configured allowlist when Ollama is unavailable.
 - A frontend app is scaffolded under `frontend/` using **Vite + React + TypeScript + Tailwind CSS + Zustand + Zod**.
 - Infrastructure is fully configured under `infrastructure/` — Docker (standalone + Compose) and Kubernetes manifests for all three services.
-- **Orleans** orchestration and **Ollama** integration are planned next steps rather than active runtime dependencies.
+- **Orleans** orchestration is the planned next step. The backend-only **Ollama client layer** (`IOllamaClient`, `OllamaHttpClient`, `OllamaOptions`) is already implemented and registered.
 
 ## Technologies
 
 ### Implemented
 
-- **.NET 8** Minimal APIs
+- **.NET 8** Minimal APIs (vertical slice architecture)
 - **OpenAPI 3.0** contract-first API design
+- **Ollama client layer** — `IOllamaClient` / `OllamaHttpClient` / `OllamaOptions` registered in the backend; model listing calls Ollama with allowlist-based fallback
 - **Vite + React + TypeScript** frontend with Tailwind CSS, Zustand, and Zod
 - **Docker / Docker Compose** for containerised local and production-like runs
 - **Kubernetes** manifests targeting the `chatbot-ai` namespace
@@ -24,7 +26,7 @@ My own chatbot web app.
 ### Planned next layers
 
 - **Microsoft Orleans** for conversation orchestration and state ownership
-- **Ollama** for local model inference
+- Wire `send-message` and `create-conversation` flows through Ollama (Ollama client is ready; conversation endpoints still use the in-memory stub)
 
 ## Repo Structure
 
@@ -85,7 +87,7 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 | Build backend | `dotnet build backend/src/MyOwnChatbotAi.sln` | Succeeds with `0` warnings and `0` errors |
 | Run API | `dotnet run --project backend/src/MyOwnChatbotAi.Api` | Starts the API on `http://localhost:5050` |
 | Smoke check root | `curl http://localhost:5050/` | Returns `{"service":"my-own-chatbot-ai-api","status":"ok"}` |
-| Smoke check models | `curl http://localhost:5050/api/models` | Returns the stubbed `llama3.1` and `mistral` model list |
+| Smoke check models | `curl http://localhost:5050/api/models` | Returns models from Ollama (filtered by allowlist), or falls back to the configured `llama3.1` / `mistral` allowlist when Ollama is unreachable |
 | Build frontend | `cd frontend && npm run build` | Produces `frontend/dist/` |
 | Lint frontend | `cd frontend && npm run lint` | ESLint passes |
 | Validate Compose | `cd infrastructure && docker compose -f docker-compose.yml config` | Prints resolved config with no errors |
@@ -101,5 +103,5 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 ## Next Steps
 
 1. Replace the in-memory conversation stub with Orleans-backed orchestration.
-2. Add the backend-only Ollama client and real model/message flows.
+2. Wire `send-message` and `create-conversation` to the existing Ollama client (client layer is done; endpoint delegation is still in-memory).
 3. Wire the frontend to the live backend API and verify full end-to-end chat.

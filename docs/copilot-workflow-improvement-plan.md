@@ -16,16 +16,18 @@ The repository already has a solid baseline:
 - `/.github/instructions/backend.instructions.md`
 - `/.github/instructions/frontend.instructions.md`
 - `/.github/instructions/orleans.instructions.md`
-- `/.github/prompts/scaffold-backend-slice.prompt.md`
+- `/.github/instructions/dev-setup.instructions.md` ✅ added
+- `/.github/instructions/testing.instructions.md` ✅ added
+- `/.github/agents/chatbot-builder.agent.md` ✅ added
 - `/.github/prompts/update-project-documentation.prompt.md`
 
-The current setup is good for guidance, but there are a few remaining gaps:
+The `scaffold-frontend-app.prompt.md` and `add-end-to-end-feature.prompt.md` prompts were added and subsequently removed after the workflows they covered were superseded by the `chatbot-builder` agent.
 
-1. The main repo guidance is aligned now, but it still needs to stay in sync as the repo evolves.
-2. There is no dedicated Copilot guidance for local dev setup and environment issues.
-3. There is no testing-focused instruction file yet.
-4. There is no repo-specific custom agent.
-5. There are not yet enough repeated workflows to justify investing heavily in skills.
+The current setup covers the gaps identified in the original plan. Remaining optional work:
+
+1. Keep all instruction files synchronized as verified commands and repo structure change.
+2. Optionally add `ollama-integration.instructions.md` once real Ollama end-to-end flows are active.
+3. Optionally add `check-contract-drift.prompt.md` if contract/model drift becomes a recurring problem.
 
 ---
 
@@ -227,7 +229,7 @@ That would add maintenance burden without much workflow benefit.
 
 ---
 
-## Recommended Future `.github` Structure
+## Recommended Current `.github` Structure
 
 ```text
 .github/
@@ -237,30 +239,26 @@ That would add maintenance burden without much workflow benefit.
     backend.instructions.md
     frontend.instructions.md
     orleans.instructions.md
-    dev-setup.instructions.md              # new
-    testing.instructions.md                # new
-    ollama-integration.instructions.md     # optional later
+    dev-setup.instructions.md              ✅ added
+    testing.instructions.md                ✅ added
+    ollama-integration.instructions.md     # optional — add when real Ollama flows are active
   prompts/
-    scaffold-backend-slice.prompt.md
     update-project-documentation.prompt.md
-    scaffold-frontend-app.prompt.md        # new
-    add-end-to-end-feature.prompt.md       # new
     check-contract-drift.prompt.md         # optional later
   agents/
-    chatbot-builder.agent.md               # new
+    chatbot-builder.agent.md               ✅ added
 ```
 
 ---
 
 ## Recommended Priority Order
 
-1. **Update `copilot-instructions.md`**
-2. **Add `dev-setup.instructions.md`**
-3. **Add `testing.instructions.md`**
-4. **Add `scaffold-frontend-app.prompt.md`**
-5. **Add `add-end-to-end-feature.prompt.md`**
-6. **Create `chatbot-builder.agent.md`**
-7. Reassess whether skills are justified
+1. ✅ **Update `copilot-instructions.md`**
+2. ✅ **Add `dev-setup.instructions.md`**
+3. ✅ **Add `testing.instructions.md`**
+4. ✅ **Create `chatbot-builder.agent.md`**
+5. Optionally add `ollama-integration.instructions.md` once real Ollama flows are active
+6. Reassess whether skills are justified
 
 ---
 
@@ -268,12 +266,12 @@ That would add maintenance burden without much workflow benefit.
 
 This plan can be considered successfully implemented when:
 
-- `README.md` and `/.github/copilot-instructions.md` are aligned
-- new instructions exist for setup/testing (and optionally Ollama integration)
-- at least one frontend-focused and one end-to-end prompt exist
-- one repo-specific agent exists and is usable
+- ✅ `README.md` and `/.github/copilot-instructions.md` are aligned
+- ✅ new instructions exist for setup/testing
+- ✅ one repo-specific agent exists and is usable
 - prompts/agent clearly reference the existing architecture and conventions
 - no new documentation invents unsupported commands or project structure
+- optionally: `ollama-integration.instructions.md` added once real Ollama flows are active
 
 ---
 

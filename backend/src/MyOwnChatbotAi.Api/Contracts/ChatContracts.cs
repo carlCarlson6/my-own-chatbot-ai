@@ -13,11 +13,12 @@ public sealed record ChatMessageInput(string Content, string? ClientMessageId);
 
 public sealed record SendMessageRequest(Guid? ConversationId, string? Model, ChatMessageInput Message);
 
+[Orleans.GenerateSerializer]
 public sealed record ChatMessage(
-    Guid MessageId,
-    string Role,
-    string Content,
-    DateTime CreatedAtUtc);
+    [property: Orleans.Id(0)] Guid MessageId,
+    [property: Orleans.Id(1)] string Role,
+    [property: Orleans.Id(2)] string Content,
+    [property: Orleans.Id(3)] DateTime CreatedAtUtc);
 
 public sealed record SendMessageResponse(
     Guid ConversationId,
