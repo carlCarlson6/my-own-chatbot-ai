@@ -114,12 +114,8 @@ Apply this test to every instruction file:
 - `infrastructure.instructions.md` — passive conventions for infra files. Auto-loading is correct.
 
 #### Missing skills to consider
-Based on the codebase and tech stack, evaluate whether these skills would be useful:
-- `check-prerequisites` — verify .NET 8, Node 18+, Ollama are installed and running
-- `verify-build` — run backend build + frontend build + lint and report pass/fail
-- `scaffold-plan` — create a new `plans/*.plan.md` from the canonical template
-- `explain-grain` — explain an Orleans grain's state, lifecycle, and activation in plain language
-- `validate-contract` — check that backend DTOs and frontend Zod schemas match `chatbot-api.openapi.yml`
+
+Based on the codebase and tech stack, check whether any of the existing skills are stale or whether new gaps have emerged since the last review. Current skills are in `.github/skills/`.
 
 ### Category 7 — Staleness and accuracy
 - Do any files reference paths, commands, plans, or features that no longer exist?

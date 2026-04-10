@@ -78,6 +78,8 @@ Invoke these for specific actions during a task:
 | `setup-local-env` | Verifying or troubleshooting the local dev environment |
 | `verify-build` | Running the full build/lint suite before claiming a task done |
 | `scaffold-plan` | Creating a new plan document from the canonical template |
+| `explain-grain` | Understanding an Orleans grain's state, lifecycle, and API wiring |
+| `validate-contract` | Checking backend DTOs and frontend Zod schemas match the OpenAPI contract |
 
 ## Before Claiming Success
 
