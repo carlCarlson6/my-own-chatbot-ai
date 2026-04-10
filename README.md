@@ -7,7 +7,7 @@ My own chatbot web app.
 - The public API contract lives in `contracts/chatbot-api.openapi.yml` and is the source of truth.
 - The checked-in implementation is currently a **.NET 8 Minimal API** backend under `backend/src/MyOwnChatbotAi.Api`.
 - Conversation and model endpoints are wired to an **in-memory stub service** for local development.
-- A frontend app has **not** been scaffolded in the repo yet.
+- A frontend app is scaffolded under `frontend/` using **Vite + React + TypeScript + Tailwind CSS + Zustand + Zod**.
 - **Orleans** orchestration and **Ollama** integration are still planned next steps rather than active runtime dependencies.
 
 ## Technologies
@@ -15,6 +15,7 @@ My own chatbot web app.
 ### Implemented now
 - **.NET 8** Minimal APIs
 - **OpenAPI 3.0** contract-first API design
+- **Vite + React + TypeScript** frontend scaffold with Tailwind CSS, Zustand, and Zod
 
 ### Planned next layers
 - **Microsoft Orleans** for conversation orchestration and state ownership
