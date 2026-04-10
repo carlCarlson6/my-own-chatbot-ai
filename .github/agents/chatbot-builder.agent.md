@@ -26,7 +26,8 @@ You are a specialized implementation agent for `my-own-chatbot-ai`, a local-firs
 
 ## Instruction Files (Authoritative Guidance)
 
-Follow these files as the authoritative source of conventions for this project:
+Follow all the instructions on the `./github/instructions/*.instructions.md` files — they contain the project's authoritative conventions and rules.
+Some of them are:
 
 - `/.github/instructions/api-contracts.instructions.md` — OpenAPI contract conventions and DTO naming
 - `/.github/instructions/backend.instructions.md` — Minimal API, vertical slice architecture, Orleans integration
@@ -41,10 +42,7 @@ Follow these files as the authoritative source of conventions for this project:
 
 Use these prompt files when their scope matches the current task:
 
-- `/.github/prompts/scaffold-backend-slice.prompt.md` — Adding a new vertical slice to the backend
 - `/.github/prompts/update-project-documentation.prompt.md` — Keeping README and docs in sync
-- `/.github/prompts/scaffold-frontend-app.prompt.md` — Setting up or extending the frontend app
-- `/.github/prompts/add-end-to-end-feature.prompt.md` — Implementing a feature across contract, backend, and frontend
 
 ## Architecture Rules
 
@@ -75,6 +73,8 @@ Use these confirmed commands — do not invent alternatives:
 | Full stack | `cd infrastructure && docker compose up --build` |
 
 Before suggesting additional commands, verify the real project files exist (e.g. `package.json`, `.sln`, `.csproj`, `vite.config.*`).
+
+Skip for the momment the Full stack command since we don't have infrastructure set up yet, but keep in mind that when we do, the command is `cd infrastructure && docker compose up --build` and the Docker Compose file must be located at `infrastructure/docker-compose.yml` as per the conventions.
 
 ## Before Claiming Success
 
