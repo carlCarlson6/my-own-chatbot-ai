@@ -21,6 +21,7 @@ My own chatbot web app.
 - Initial implementation has started with a **contract-first** scaffold.
 - Canonical API contract: `contracts/chatbot-api.openapi.yml`
 - Scaffolding plan: `docs/scaffolding-plan.md`
+- Secure backend/Ollama execution plan: `docs/backend-ollama-communication-plan.md`
 - The backend scaffold now exists under `backend/` and includes a working minimal chat API stub.
 - The frontend scaffold is the next step; the local JavaScript toolchain currently needs a small npm/Node repair or workaround.
 
