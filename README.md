@@ -8,7 +8,7 @@ My own chatbot web app.
 - The checked-in implementation is a **.NET 8 Minimal API** backend under `backend/src/MyOwnChatbotAi.Api`.
 - **Conversation endpoints** (`create`, `send`, `history`) are now orchestrated by **Microsoft Orleans** (`ConversationGrain`) which delegates message generation to `IOllamaClient`.
 - **Model listing** (`GET /api/models`) calls **Ollama** directly via the backend client layer, with an automatic fallback to the configured allowlist when Ollama is unavailable.
-- A frontend chat UI is implemented under `frontend/` — Axios + Zod API client layer, Zustand store, and React components (MessageList, MessageComposer, ModelSelector, ConversationHeader, ChatLayout) are all wired to the backend. The Vite dev server proxies `/api/*` to `localhost:5050`.
+- A frontend chat UI is implemented under `frontend/` — native `fetch` + Zod API client layer, Zustand store, and React components (MessageList, MessageBubble, MessageComposer, ModelSelector, ConversationHeader, ChatLayout) are all wired to the backend. The Vite dev server proxies `/api/*` to `localhost:5050`.
 - Infrastructure is fully configured under `infrastructure/` — Docker (standalone + Compose) and Kubernetes manifests for all three services.
 
 ## Technologies
@@ -19,25 +19,29 @@ My own chatbot web app.
 - **OpenAPI 3.0** contract-first API design
 - **Ollama client layer** — `IOllamaClient` / `OllamaHttpClient` / `OllamaOptions` registered in the backend; model listing calls Ollama with allowlist-based fallback
 - **Microsoft Orleans** — `ConversationGrain` owns conversation state and orchestrates Ollama-backed message generation
-- **Vite + React + TypeScript** frontend with Tailwind CSS, Zustand, and Zod — **fully wired to the backend API** with a typed Axios client, Zod-validated responses, and a Zustand store driving the chat UI
+- **Vite + React + TypeScript** frontend with Tailwind CSS, Zustand, and Zod — **fully wired to the backend API** with a native `fetch` client, Zod-validated responses, and a Zustand store driving the chat UI
 - **Docker / Docker Compose** for containerised local and production-like runs
 - **Kubernetes** manifests targeting the `chatbot-ai` namespace
 
 ### Planned next layers
 
-- Wire the frontend send-message flow to the live backend API and verify full end-to-end chat.
 - Token streaming support (deferred from MVP).
+- Conversation history browser / sidebar (single conversation per session in MVP).
 
 ## Repo Structure
 
 ```
 my-own-chatbot-ai/
-├── backend/          .NET 8 Minimal API + Orleans (planned)
+├── backend/          .NET 8 Minimal API + Orleans
 ├── contracts/        OpenAPI YAML — source of truth for the API contract
 ├── plans/            Architecture and workflow planning documents
 ├── frontend/         Vite + React + TypeScript SPA
 ├── infrastructure/   Docker, Docker Compose, and Kubernetes configuration
-└── .github/          Copilot instructions and reusable prompts
+└── .github/          Copilot agents, instructions, prompts, and skills
+    ├── agents/       3 custom Copilot coding agents
+    ├── instructions/ 8 convention instruction files
+    ├── prompts/      6 reusable prompt files
+    └── skills/       5 on-demand skill files
 ```
 
 ## Infrastructure
@@ -103,16 +107,11 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 
 ## Plans
 
-### WIP / In-Progress
-
-Plans that are partially done or still being executed.
-
-- [`plans/frontend-chat-ui-plan.md`](plans/frontend-chat-ui-plan.md) — Frontend chat UI implementation plan
-
 ### Completed
 
 Plans that have been fully executed and are kept for historical reference.
 
+- [`plans/frontend-chat-ui-plan.md`](plans/frontend-chat-ui-plan.md) — Frontend chat UI: API client (native fetch + Zod), Zustand store, 6 React components, end-to-end wiring, and UX polish. All 5 phases ✅ done.
 - [`plans/old/backend-ollama-communication-plan.md`](plans/old/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: all 5 phases ✅ done.
 - [`plans/old/scaffolding-plan.md`](plans/old/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration. All 6 steps complete; frontend wiring tracked in `plans/frontend-chat-ui-plan.md`.
 - [`plans/old/copilot-workflow-improvement-plan.md`](plans/old/copilot-workflow-improvement-plan.md) — Copilot workflow improvement plan: dev-setup instructions, testing guidelines, chatbot-builder agent, and prompt cleanup.
@@ -121,3 +120,4 @@ Plans that have been fully executed and are kept for historical reference.
 
 1. Add token streaming support (deferred from MVP).
 2. Add conversation history browser / sidebar.
+3. Add test infrastructure (unit + integration tests for backend slices and frontend store).

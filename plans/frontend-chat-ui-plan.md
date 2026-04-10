@@ -20,9 +20,9 @@ As of this update, the following already exist:
 - `frontend/src/index.css` — global styles
 - `frontend/package.json` — all required packages installed:
   - `react` + `react-dom` (v19)
-  - `zustand` (v5) — shared state
+  - `axios` was removed — native `fetch` is used instead
   - `zod` (v4) — runtime validation
-  - `axios` (v1) — HTTP client
+  - `zustand` (v5) — shared state
   - `tailwindcss` (v4) — utility-first CSS
   - `typescript` (v6) — type safety
 - No `api/`, `components/`, `store/`, or `types/` directories exist yet — all must be created
@@ -70,7 +70,7 @@ Before starting any implementation work, the next agent should first check what 
    - inspect `frontend/package.json`
 2. Compare the current repo against this document and identify whether any of the following already changed:
    - API endpoint surface or DTO shapes
-   - installed packages (`zod`, `zustand`, `axios` versions)
+   - installed packages (`zod`, `zustand` versions; note: `axios` removed, native fetch used)
    - any partially-implemented component or store files
    - `vite.config.ts` proxy settings (needed for local dev API routing)
 3. If changes make this plan stale, update this file first before implementing.
@@ -111,7 +111,7 @@ Another agent may have already completed part of the scaffold or changed the fro
 ```
 frontend/src/
 ├── api/
-│   ├── client.ts              # Axios instance with base URL and interceptors
+│   ├── client.ts              # native fetch wrapper with typed error handling
 │   ├── conversations.ts       # Typed fetch functions for conversation endpoints
 │   ├── models.ts              # Typed fetch function for /api/models
 │   └── schemas.ts             # Zod schemas matching the OpenAPI contract
@@ -154,9 +154,10 @@ frontend/src/
    - `listModelsResponseSchema` → `ListModelsResponse`
    - `apiErrorSchema` → `ApiError`
 3. Create `src/api/client.ts`:
-   - Axios instance with `baseURL` pointing to `http://localhost:5050` (or a Vite proxy path)
-   - Default `Content-Type: application/json` header
-   - Response interceptor that extracts typed `ApiError` from 4xx/5xx responses
+   - Native `fetch` wrapper with typed error extraction
+   - `apiGet` and `apiPost` helpers with `Content-Type: application/json`
+   - Error handler that parses `ApiError` from 4xx/5xx responses via Zod
+   - No base URL — Vite proxy (dev) and nginx (prod) both route `/api` to the backend
 4. Create `src/api/conversations.ts` with three typed functions:
    - `createConversation(req?: CreateConversationRequest): Promise<CreateConversationResponse>`
    - `sendMessage(req: SendMessageRequest): Promise<SendMessageResponse>`
