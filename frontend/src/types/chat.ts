@@ -17,13 +17,6 @@ export interface Conversation {
   messages: ChatMessage[]
 }
 
-export interface ModelSummary {
-  name: string
-  displayName: string
-  isDefault: boolean
-  description?: string | null
-}
-
 export interface ApiError {
   code: string
   message: string

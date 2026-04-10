@@ -21,7 +21,7 @@ public static class CreateConversationEndpoint
     {
         var conversationId = Guid.NewGuid();
         var grain = grains.GetGrain<IConversationGrain>(conversationId);
-        var response = await grain.InitializeAsync(request?.Title ?? string.Empty, request?.Model ?? string.Empty);
+        var response = await grain.InitializeAsync(request?.Title ?? string.Empty);
         return Results.Created($"/api/conversations/{response.ConversationId}/history", response);
     }
 }

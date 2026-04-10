@@ -5,11 +5,8 @@ import { MessageComposer } from './MessageComposer'
 
 export function ChatLayout() {
   const messages = useChatStore((s) => s.messages)
-  const model = useChatStore((s) => s.model)
-  const availableModels = useChatStore((s) => s.availableModels)
   const status = useChatStore((s) => s.status)
   const errorMessage = useChatStore((s) => s.errorMessage)
-  const setModel = useChatStore((s) => s.setModel)
   const sendMessage = useChatStore((s) => s.sendMessage)
   const clearError = useChatStore((s) => s.clearError)
 
@@ -17,12 +14,7 @@ export function ChatLayout() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-950 text-gray-100">
-      <ConversationHeader
-        models={availableModels}
-        selectedModel={model}
-        onModelChange={setModel}
-        isSending={isSending}
-      />
+      <ConversationHeader />
 
       <MessageList messages={messages} isSending={isSending} />
 

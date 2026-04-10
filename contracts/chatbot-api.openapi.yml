@@ -19,8 +19,6 @@ servers:
 tags:
   - name: Conversations
     description: Conversation lifecycle and message exchange
-  - name: Models
-    description: Locally available Ollama model metadata
 paths:
   /api/conversations:
     post:
@@ -37,7 +35,6 @@ paths:
               default:
                 value:
                   title: Weekend planning
-                  model: llama3.1
       responses:
         '201':
           description: Conversation created successfully
@@ -67,12 +64,10 @@ paths:
               existingConversation:
                 value:
                   conversationId: 11111111-1111-1111-1111-111111111111
-                  model: llama3.1
                   message:
                     content: Summarize the benefits of Orleans for chat orchestration.
               createOnFirstMessage:
                 value:
-                  model: llama3.1
                   message:
                     content: Hello, can you help me scaffold my chatbot project?
       responses:
@@ -134,25 +129,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
 
-  /api/models:
-    get:
-      tags: [Models]
-      summary: List locally available Ollama models
-      operationId: listModels
-      responses:
-        '200':
-          description: Models loaded successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListModelsResponse'
-        '500':
-          description: Unexpected server failure
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-
 components:
   schemas:
     CreateConversationRequest:
@@ -163,9 +139,6 @@ components:
           type: string
           maxLength: 120
           description: Optional display name for the conversation
-        model:
-          type: string
-          description: Preferred Ollama model for the conversation
 
     CreateConversationResponse:
       type: object
@@ -201,9 +174,6 @@ components:
           format: uuid
           nullable: true
           description: Optional existing conversation id; when omitted, the backend may create one.
-        model:
-          type: string
-          description: Optional model override for this request.
         message:
           $ref: '#/components/schemas/ChatMessageInput'
 
@@ -258,35 +228,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ChatMessage'
-
-    ListModelsResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - models
-      properties:
-        models:
-          type: array
-          items:
-            $ref: '#/components/schemas/ModelSummary'
-
-    ModelSummary:
-      type: object
-      additionalProperties: false
-      required:
-        - name
-        - displayName
-        - isDefault
-      properties:
-        name:
-          type: string
-        displayName:
-          type: string
-        isDefault:
-          type: boolean
-        description:
-          type: string
-          nullable: true
 
     ChatMessageInput:
       type: object

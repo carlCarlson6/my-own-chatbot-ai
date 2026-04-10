@@ -33,7 +33,7 @@ public sealed class ConversationGrain : Grain, IConversationGrain
         _logger = logger;
     }
 
-    public async Task<CreateConversationResponse> InitializeAsync(string title, string model)
+    public async Task<CreateConversationResponse> InitializeAsync(string title)
     {
         var conversationId = this.GetPrimaryKey();
 
@@ -48,11 +48,10 @@ public sealed class ConversationGrain : Grain, IConversationGrain
                 "active");
         }
 
-        var normalizedModel = NormalizeModel(model);
         var normalizedTitle = string.IsNullOrWhiteSpace(title) ? "New conversation" : title.Trim();
 
         _state.State.Title = normalizedTitle;
-        _state.State.Model = normalizedModel;
+        _state.State.Model = _options.DefaultModel;
         _state.State.CreatedAtUtc = DateTime.UtcNow;
         _state.State.IsInitialized = true;
 
@@ -60,7 +59,7 @@ public sealed class ConversationGrain : Grain, IConversationGrain
 
         _logger.LogInformation(
             "Conversation {ConversationId} initialized with model '{Model}' and title '{Title}'",
-            conversationId, normalizedModel, normalizedTitle);
+            conversationId, _state.State.Model, normalizedTitle);
 
         return new CreateConversationResponse(
             conversationId,
@@ -70,22 +69,14 @@ public sealed class ConversationGrain : Grain, IConversationGrain
             "active");
     }
 
-    public async Task<SendMessageResponse> SendMessageAsync(ChatMessageInput message, string? model)
+    public async Task<SendMessageResponse> SendMessageAsync(ChatMessageInput message)
     {
         var conversationId = this.GetPrimaryKey();
 
         if (!_state.State.IsInitialized)
         {
             _logger.LogDebug("Conversation {ConversationId} not yet initialized, auto-initializing before send", conversationId);
-            await InitializeAsync("New conversation", model ?? _options.DefaultModel);
-        }
-        else if (!string.IsNullOrWhiteSpace(model))
-        {
-            var previousModel = _state.State.Model;
-            _state.State.Model = NormalizeModel(model);
-            _logger.LogDebug(
-                "Model override for conversation {ConversationId}: '{PreviousModel}' -> '{Model}'",
-                conversationId, previousModel, _state.State.Model);
+            await InitializeAsync("New conversation");
         }
 
         var userMessage = new ChatMessage(Guid.NewGuid(), "user", message.Content.Trim(), DateTime.UtcNow);
@@ -152,7 +143,4 @@ public sealed class ConversationGrain : Grain, IConversationGrain
                 "active",
                 _state.State.Messages.AsReadOnly()));
     }
-
-    private string NormalizeModel(string? model) =>
-        string.IsNullOrWhiteSpace(model) ? _options.DefaultModel : model.Trim();
 }

@@ -40,7 +40,7 @@ public static class SendMessageEndpoint
 
         try
         {
-            var response = await grain.SendMessageAsync(request.Message, request.Model);
+            var response = await grain.SendMessageAsync(request.Message);
             return Results.Ok(response);
         }
         catch (InvalidOperationException ex)

@@ -13,7 +13,7 @@
 
 FROM ollama/ollama:latest
 
-ARG DEFAULT_MODEL=llama3.2
+ARG DEFAULT_MODEL=mistral
 
 # Copy entrypoint script that starts Ollama and optionally pulls the default model
 COPY infrastructure/docker/ollama/entrypoint.sh /entrypoint.sh

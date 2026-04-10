@@ -2,8 +2,7 @@ namespace MyOwnChatbotAi.Api.Contracts;
 
 [GenerateSerializer]
 public sealed record CreateConversationRequest(
-    [property: Id(0)] string? Title,
-    [property: Id(1)] string? Model);
+    [property: Id(0)] string? Title);
 
 [GenerateSerializer]
 public sealed record CreateConversationResponse(
@@ -21,8 +20,7 @@ public sealed record ChatMessageInput(
 [GenerateSerializer]
 public sealed record SendMessageRequest(
     [property: Id(0)] Guid? ConversationId,
-    [property: Id(1)] string? Model,
-    [property: Id(2)] ChatMessageInput Message);
+    [property: Id(1)] ChatMessageInput Message);
 
 [GenerateSerializer]
 public sealed record ChatMessage(
@@ -47,17 +45,6 @@ public sealed record GetConversationHistoryResponse(
     [property: Id(2)] string Model,
     [property: Id(3)] string Status,
     [property: Id(4)] IReadOnlyList<ChatMessage> Messages);
-
-[GenerateSerializer]
-public sealed record ModelSummary(
-    [property: Id(0)] string Name,
-    [property: Id(1)] string DisplayName,
-    [property: Id(2)] bool IsDefault,
-    [property: Id(3)] string? Description);
-
-[GenerateSerializer]
-public sealed record ListModelsResponse(
-    [property: Id(0)] IReadOnlyList<ModelSummary> Models);
 
 [GenerateSerializer]
 public sealed record ApiError(

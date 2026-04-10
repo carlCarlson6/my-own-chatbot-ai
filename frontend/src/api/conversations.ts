@@ -14,7 +14,6 @@ import type {
 
 export interface CreateConversationRequest {
   title?: string
-  model?: string
 }
 
 export interface ChatMessageInput {
@@ -24,7 +23,6 @@ export interface ChatMessageInput {
 
 export interface SendMessageRequest {
   conversationId?: string | null
-  model?: string
   message: ChatMessageInput
 }
 

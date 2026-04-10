@@ -50,22 +50,8 @@ export const getConversationHistoryResponseSchema = z.object({
   messages: z.array(chatMessageSchema),
 })
 
-// ── Models endpoint ───────────────────────────────────────────────────────────
-
-export const modelSummarySchema = z.object({
-  name: z.string(),
-  displayName: z.string(),
-  isDefault: z.boolean(),
-  description: z.string().nullish(),
-})
-
-export const listModelsResponseSchema = z.object({
-  models: z.array(modelSummarySchema),
-})
-
 // ── Inferred types (exported for use across the API layer) ────────────────────
 
 export type CreateConversationResponse = z.infer<typeof createConversationResponseSchema>
 export type SendMessageResponse = z.infer<typeof sendMessageResponseSchema>
 export type GetConversationHistoryResponse = z.infer<typeof getConversationHistoryResponseSchema>
-export type ListModelsResponse = z.infer<typeof listModelsResponseSchema>
