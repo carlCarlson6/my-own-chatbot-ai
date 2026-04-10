@@ -1,11 +1,11 @@
 ---
-description: "Scaffold a new plan document in plans/ from the canonical template. Pre-fills today's date, required sections, and Pending status markers. Registers the plan in README automatically."
+description: "Scaffold a new plan document in docs/plans/ from the canonical template. Pre-fills today's date, required sections, and Pending status markers. Registers the plan in README automatically."
 name: "scaffold-plan"
 ---
 
 # scaffold-plan
 
-Create a new plan document in `plans/` using the canonical template. Pre-fill the structure so nothing is forgotten. Register it in `README.md` immediately.
+Create a new plan document in `docs/plans/` using the canonical template. Pre-fill the structure so nothing is forgotten. Register it in `README.md` immediately.
 
 ## Step 1 — Determine the plan name and goal
 
@@ -15,7 +15,7 @@ You need:
 
 The file will be created at:
 ```
-plans/<kebab-name>-plan.md
+docs/plans/<kebab-name>-plan.md
 ```
 
 ## Step 2 — Create the plan file
@@ -73,7 +73,7 @@ Before starting implementation work, first inspect the current repo state and co
 Add to the `## Plans` section under `### WIP / In-Progress`:
 
 ```md
-- [`plans/<kebab-name>-plan.md`](plans/<kebab-name>-plan.md) — <one-line description>.
+- [`docs/plans/<kebab-name>-plan.md`](docs/plans/<kebab-name>-plan.md) — <one-line description>.
 ```
 
 If the `## Plans` section or `### WIP / In-Progress` subsection does not exist yet, create them.
@@ -81,6 +81,6 @@ If the `## Plans` section or `### WIP / In-Progress` subsection does not exist y
 ## Step 4 — Confirm
 
 Report:
-- **Plan created**: `plans/<kebab-name>-plan.md`
+- **Plan created**: `docs/plans/<kebab-name>-plan.md`
 - **README updated**: yes/no
 - **Next step**: fill in the phases and tasks, then use the `chatbot-builder` agent to execute

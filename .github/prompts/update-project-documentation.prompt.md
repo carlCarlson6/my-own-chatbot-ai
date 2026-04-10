@@ -20,7 +20,7 @@ Task:
 1. Inspect the current repo state before editing any documentation.
 2. Review the main documentation and customization files, especially:
    - `README.md`
-   - `plans/**/*.md`
+   - `docs/plans/**/*.md`
    - `.github/copilot-instructions.md`
    - `.github/instructions/**/*.md`
    - `.github/prompts/**/*.prompt.md`

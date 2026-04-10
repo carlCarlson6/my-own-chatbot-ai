@@ -25,7 +25,7 @@ Before writing a single line:
 1. Read `README.md` and `contracts/chatbot-api.openapi.yml`.
 2. Identify the closest existing feature slice (e.g. `backend/src/.../Conversations/`) to use as a structural reference.
 3. Read the relevant frontend files (`frontend/src/`) to understand current Zustand store shape and Zod schemas.
-4. If a planning doc exists in `plans/` for this feature, read it and check its status markers.
+4. If a planning doc exists in `docs/plans/` for this feature, read it and check its status markers.
 
 ---
 

@@ -24,7 +24,7 @@ As of this update, the following already exist:
 - `backend/src/MyOwnChatbotAi.Api/Services/Ollama/OllamaOptions.cs` — configuration type ✅
 - `backend/src/MyOwnChatbotAi.Api/Services/Ollama/OllamaException.cs` — dedicated exception type ✅
 - `backend/src/MyOwnChatbotAi.Api/appsettings.json` — Ollama config block (BaseUrl, DefaultModel, AllowedModels, TimeoutSeconds) ✅
-- `plans/old/scaffolding-plan.md` — earlier scaffold plan
+- `docs/plans/old/scaffolding-plan.md` — earlier scaffold plan
 
 Current verified backend commands from `README.md`:
 
@@ -80,7 +80,7 @@ Before starting any implementation work, the next agent should first check what 
 1. Review the latest project state before coding:
    - inspect `README.md`
    - inspect `contracts/chatbot-api.openapi.yml`
-   - inspect `plans/`
+   - inspect `docs/plans/`
    - inspect `backend/src/MyOwnChatbotAi.Api/`
 2. Compare the current repo against this document and identify whether any of the following already changed:
    - endpoint surface

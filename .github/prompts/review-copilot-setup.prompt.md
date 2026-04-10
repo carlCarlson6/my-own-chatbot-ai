@@ -1,11 +1,11 @@
 ---
-description: "Review the .github/ Copilot customization setup and produce a prioritized improvement plan. Does NOT apply any changes — creates a plan doc in plans/ for review and approval before execution."
+description: "Review the .github/ Copilot customization setup and produce a prioritized improvement plan. Does NOT apply any changes — creates a plan doc in docs/plans/ for review and approval before execution."
 name: "Review Copilot Setup"
 argument-hint: "Optional focus area, e.g. 'agents', 'instructions applyTo', 'missing prompts', or leave blank for a full review"
 agent: "agent"
 ---
 
-Review the `.github/` Copilot customization folder and produce a structured improvement plan. **Do not apply any changes.** The output of this workflow is a plan document in `plans/` that can be reviewed, approved, and executed later.
+Review the `.github/` Copilot customization folder and produce a structured improvement plan. **Do not apply any changes.** The output of this workflow is a plan document in `docs/plans/` that can be reviewed, approved, and executed later.
 
 ---
 
@@ -13,7 +13,7 @@ Review the `.github/` Copilot customization folder and produce a structured impr
 
 1. Reads every file in `.github/` to understand the current state
 2. Analyses the setup for issues across seven categories
-3. Writes a dated improvement plan to `plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md`
+3. Writes a dated improvement plan to `docs/plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md`
 4. Registers the plan in `README.md`
 5. **Stops** — does not implement any change
 
@@ -42,7 +42,7 @@ Read every file listed below before forming any opinion. Do not skip files.
 Also read:
 - `README.md` — to understand the current project state and verified commands
 - `contracts/chatbot-api.openapi.yml` — to understand the API contract scope
-- `plans/` — list existing plans so the new plan does not duplicate them
+- `docs/plans/` — list existing plans so the new plan does not duplicate them
 
 ---
 
@@ -101,7 +101,7 @@ Apply this test to every instruction file:
 - Why: "Run `dotnet build`, `npm run build`, `npm run lint` and confirm they pass" is an action, not a coding convention. It belongs in a skill you invoke at the end of a task, not injected into context while writing every test file.
 
 #### `planning.instructions.md`
-- Current `applyTo: plans/**/*.md` — fires when editing plan files
+- Current `applyTo: docs/plans/**/*.md` — fires when editing plan files
 - Content is **mixed**: passive format rules (required sections, naming, status markers) + a full plan **template** to scaffold from
 - **Verdict**: Partial skill candidate — keep the format rules as instruction; the template scaffold is a `scaffold-plan` skill
 - Why: The naming and section rules are genuine conventions that should guide editing any plan file. But the template is a one-time creation action — it belongs in a skill (or a prompt) you invoke when starting a new plan.
@@ -142,7 +142,7 @@ Group findings into:
 
 Create the file at:
 ```
-plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md
+docs/plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md
 ```
 where `<YYYY-MM-DD>` is today's date.
 
@@ -168,7 +168,7 @@ Example phase entry:
 Add the new plan to the `## Plans` section of `README.md` under `### WIP / In-Progress`:
 
 ```md
-- [`plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md`](plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md) — Copilot setup review: prioritized .github/ improvements.
+- [`docs/plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md`](docs/plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md) — Copilot setup review: prioritized .github/ improvements.
 ```
 
 ---
@@ -187,4 +187,4 @@ Provide a concise summary:
 - **Findings count by category**: e.g. "Redundancy: 2, applyTo: 3, Coverage gaps: 1, Skills: 2, Staleness: 1"
 - **Plan created at**: file path
 - **Top 3 must-fix items**: brief list
-- **Next step**: "Review `plans/copilot-config-improvement-<date>-plan.md` and run this plan when ready"
+- **Next step**: "Review `docs/plans/copilot-config-improvement-<date>-plan.md` and run this plan when ready"

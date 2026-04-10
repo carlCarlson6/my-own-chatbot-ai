@@ -45,7 +45,7 @@ You are a focused agent for API contract changes in `my-own-chatbot-ai`. Your wo
 - **Never** update backend or frontend before updating the OpenAPI contract.
 - **Never** add a field to a backend DTO that is not in the OpenAPI contract.
 - **Never** skip Zod schema updates — contract drift between the spec and frontend schemas is a bug.
-- If a change affects a planning doc in `plans/`, update the plan's status markers after implementation.
+- If a change affects a planning doc in `docs/plans/`, update the plan's status markers after implementation.
 
 ## Output Format
 

@@ -1,17 +1,17 @@
 ---
-description: "Audit every file under plans/ and update their status markers to match the actual repo state. Does NOT modify implementation files — only updates plan documents and README status entries."
+description: "Audit every file under docs/plans/ and update their status markers to match the actual repo state. Does NOT modify implementation files — only updates plan documents and README status entries."
 name: "Review Plans"
 argument-hint: "Optional: a specific plan file to audit, e.g. 'frontend-chat-ui-plan.md', or leave blank to audit all plans"
 agent: "agent"
 ---
 
-Audit all plan documents under `plans/` and synchronise their status markers with the actual state of the repository. **Do not modify any implementation files.** The only files you may change are files under `plans/` and `README.md`.
+Audit all plan documents under `docs/plans/` and synchronise their status markers with the actual state of the repository. **Do not modify any implementation files.** The only files you may change are files under `docs/plans/` and `README.md`.
 
 ---
 
 ## Step 1 — Inventory all plan files
 
-1. List every file under `plans/`, including `plans/old/` if it exists.
+1. List every file under `docs/plans/`, including `docs/plans/old/` if it exists.
 2. Note the full relative path of each file — you will process them all.
 3. If an `argument-hint` value was provided and matches a specific file name, still audit all plans but prioritise that file first.
 
@@ -66,7 +66,7 @@ For each plan where one or more phase statuses changed:
 2. Update `_Last updated:_` to today's date (ISO format `YYYY-MM-DD`).
 3. Do **not** rewrite or reformat any other content — only change the status markers and the date.
 4. Do **not** create new plan files.
-5. Do **not** modify any file outside `plans/` except `README.md` (covered in Step 4).
+5. Do **not** modify any file outside `docs/plans/` except `README.md` (covered in Step 4).
 
 ---
 
@@ -95,7 +95,7 @@ After all files are updated, output a structured summary directly in your respon
 
 List each plan file where at least one marker was changed:
 ```
-plans/<file>.md
+docs/plans/<file>.md
   - Phase N "<phase title>": ⏳ Pending → ✅ Done  (reason: <one-line evidence>)
   - Phase M "<phase title>": ✅ Done → ⏳ Pending  (reason: <one-line evidence>)
   - _Last updated_ changed to YYYY-MM-DD
@@ -105,14 +105,14 @@ plans/<file>.md
 
 List each plan file where no markers were changed:
 ```
-plans/<file>.md — no changes needed
+docs/plans/<file>.md — no changes needed
 ```
 
 ### Phases that could not be verified
 
 List any phase where the criteria were ambiguous or the code could not be definitively checked:
 ```
-plans/<file>.md — Phase N "<phase title>": marker left unchanged — <reason why verification was inconclusive>
+docs/plans/<file>.md — Phase N "<phase title>": marker left unchanged — <reason why verification was inconclusive>
 ```
 
 ### README.md changes
@@ -123,7 +123,7 @@ List any entries moved between sections, or "No README changes needed."
 
 ## Step 6 — Commit and push
 
-Stage all changed files (`plans/**/*.md` and `README.md` only) and commit with exactly this message:
+Stage all changed files (`docs/plans/**/*.md` and `README.md` only) and commit with exactly this message:
 
 ```
 Update plan status markers to match current repo state
@@ -139,7 +139,7 @@ If no files were changed, skip the commit and note "Nothing to commit — all pl
 
 ## Hard constraints
 
-- **Do NOT modify** any file with extension `.cs`, `.ts`, `.tsx`, `.json`, `.yml` (except files under `plans/`), or any file outside `plans/` and `README.md`.
+- **Do NOT modify** any file with extension `.cs`, `.ts`, `.tsx`, `.json`, `.yml` (except files under `docs/plans/`), or any file outside `docs/plans/` and `README.md`.
 - **Do NOT create** new plan files.
 - **Do NOT delete** plan files.
 - **Do NOT reformat** plan content — only change status markers and the `_Last updated:_` date.
