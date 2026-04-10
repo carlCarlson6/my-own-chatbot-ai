@@ -67,6 +67,7 @@ Use these when their scope matches the current task:
 | `new-feature.prompt.md` | Adding a full end-to-end feature |
 | `new-endpoint.prompt.md` | Creating a single contract-first endpoint |
 | `setup-tests.prompt.md` | Adding first test infrastructure |
+| `review-copilot-setup.prompt.md` | Reviewing .github/ and creating an improvement plan (plan only, no changes) |
 
 ## Before Claiming Success
 
