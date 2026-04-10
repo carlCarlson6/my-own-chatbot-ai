@@ -69,8 +69,18 @@ Use these when their scope matches the current task:
 | `setup-tests.prompt.md` | Adding first test infrastructure |
 | `review-copilot-setup.prompt.md` | Reviewing .github/ and creating an improvement plan (plan only, no changes) |
 
+## Skills (On-Demand Actions)
+
+Invoke these for specific actions during a task:
+
+| Skill | Use When |
+|---|---|
+| `setup-local-env` | Verifying or troubleshooting the local dev environment |
+| `verify-build` | Running the full build/lint suite before claiming a task done |
+| `scaffold-plan` | Creating a new plan document from the canonical template |
+
 ## Before Claiming Success
 
-- Run the relevant build, lint, or test command and confirm it passes with actual output.
+- Invoke the `verify-build` skill and confirm all checks pass with actual output.
 - Do **not** report a feature as done based on code review alone — execute the verification step.
 - If commands or structure changed, update `README.md` and `/.github/copilot-instructions.md` accordingly.

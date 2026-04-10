@@ -79,53 +79,9 @@ Before starting implementation work, first inspect the current repo state and co
 
 ## Plan template
 
-Use this as a starting point for new plans:
+> **Use the `scaffold-plan` skill** to create a new plan from the canonical template. It pre-fills all required sections, sets today's date, and registers the plan in `README.md` automatically.
 
-```md
-# <Feature Name> Plan
-
-_Last updated: YYYY-MM-DD_
-
-## Goal
-
-<One-paragraph description of what this plan achieves and why.>
-
----
-
-## Pre-Implementation Change Review
-
-Before starting implementation work, first inspect the current repo state and confirm this plan still matches reality. If commands, structure, status, or acceptance criteria changed, refresh the plan before coding.
-
-### Required review steps
-1. Read `README.md`, `contracts/chatbot-api.openapi.yml`, and the affected implementation folders.
-2. Compare the current repo against this plan: endpoints, DTOs, service registrations, status markers.
-3. Update this plan first if any step is stale or already completed.
-4. Only after that review should implementation continue.
-
----
-
-## Phase 1 — <Phase name> ⏳ Pending
-
-### Tasks
-- [ ] Task one
-- [ ] Task two
-
-### Files
-- `path/to/file.cs`
-
----
-
-## Acceptance Criteria
-
-- [ ] Criterion one
-- [ ] Criterion two
-
----
-
-## Out of Scope
-
-- Item not covered by this plan
-```
+The template includes: `## Goal`, `## Pre-Implementation Change Review`, at least one `## Phase`, and `## Acceptance Criteria` — all required.
 
 ## Keep plans current
 

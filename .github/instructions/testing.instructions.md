@@ -7,12 +7,11 @@ applyTo: "{backend,frontend}/**/*.{cs,ts,tsx}"
 
 ## Verification Before Completion
 
+> **Use the `verify-build` skill** to run the full build and lint suite before claiming any task is done. Do not report success based on code review alone.
+
 - Always run build and test commands before claiming a task is done.
-- **Backend build**: `dotnet build backend/src/MyOwnChatbotAi.sln`
-- **Backend tests** (once test projects exist): `dotnet test backend/src/MyOwnChatbotAi.sln`
-- **Frontend build**: `cd frontend && npm run build`
-- **Frontend lint**: `cd frontend && npm run lint`
-- Do **not** report success unless these commands have been run and their output confirms no errors or failures.
+- Do **not** report success unless commands have been run and output confirms no errors.
+- If commands or test infrastructure changed, update `README.md` and `/.github/copilot-instructions.md`.
 
 ## Contract-First Testing Alignment
 
