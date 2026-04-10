@@ -51,7 +51,7 @@ Before continuing work from this plan, first confirm the repo has not changed si
 ## Immediate next actions
 
 1. [x] Finalize the OpenAPI contract
-2. [x] Scaffold the backend solution and Orleans host
-3. [ ] Resolve the local `npm`/Node issue and continue the frontend scaffold
+2. [x] Scaffold the backend solution and Minimal API stub
+3. [ ] Add Orleans hosting and backend-only Ollama integration
 4. [ ] Scaffold the frontend app and basic chat shell
 5. [ ] Verify real frontend build/run commands and update `README.md`
