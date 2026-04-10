@@ -1,7 +1,7 @@
 ---
 description: "Use when working on the backend .NET API for the chatbot app. Covers Minimal APIs, vertical slice architecture, Orleans-based business logic, Ollama integration, and conversation state handling."
 name: "Backend Chatbot API Guidelines"
-applyTo: "**/*.{cs,json}"
+applyTo: "backend/**/*.{cs,json}"
 ---
 # Backend Chatbot API Guidelines
 
@@ -23,6 +23,7 @@ applyTo: "**/*.{cs,json}"
 - Use **Microsoft Orleans** for business logic orchestration and conversation state management.
 - Put concurrency-sensitive chat workflows into grains to avoid race conditions and simplify stateful interactions.
 - Keep endpoint files free of business logic; delegate conversation handling, message processing, and state tracking to Orleans grains/services.
+- See `/.github/instructions/orleans.instructions.md` for grain design rules, state ownership, and concurrency patterns.
 
 ## Ollama Integration
 

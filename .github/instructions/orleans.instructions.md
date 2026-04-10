@@ -1,9 +1,11 @@
 ---
 description: "Use when designing Orleans grains, conversation state, reminders, or concurrency-sensitive workflows in the chatbot backend. Covers grain boundaries, state ownership, and safe Ollama orchestration."
 name: "Orleans Grain Guidelines"
-applyTo: "**/*.cs"
+applyTo: "backend/**/*.cs"
 ---
 # Orleans Grain Guidelines
+
+> These rules govern **grain design only** — API endpoint patterns and Minimal API conventions live in `backend.instructions.md`.
 
 ## Grain Boundaries
 
@@ -22,12 +24,13 @@ applyTo: "**/*.cs"
 - Treat the grain as the primary concurrency boundary for a conversation.
 - Route send-message, regenerate, and cancel flows through the same grain identity to avoid race conditions.
 - Avoid static mutable state and ad hoc locking outside Orleans unless there is a proven need.
+- Use `async Task` end-to-end — never use `.Result` or `.Wait()` anywhere in grain code.
 
 ## I/O and Integration
 
 - Keep external **Ollama** calls in dedicated client services coordinated by the grain.
-- Use async end-to-end; avoid `.Result` and `.Wait()`.
 - Keep retries, timeouts, and failure handling explicit and predictable.
+- Isolate Ollama-specific client code behind `IOllamaClient` so the model provider can be swapped without touching grain code.
 
 ## API Integration
 

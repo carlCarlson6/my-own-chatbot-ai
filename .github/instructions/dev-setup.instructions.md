@@ -1,7 +1,7 @@
 ---
 description: "Use when setting up the local development environment, troubleshooting tool versions, or verifying prerequisites for the chatbot app."
 name: "Dev Setup Guidelines"
-applyTo: "**"
+applyTo: "README.md, .github/**"
 ---
 # Dev Setup Guidelines
 

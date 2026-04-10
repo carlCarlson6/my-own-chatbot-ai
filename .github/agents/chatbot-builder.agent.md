@@ -9,9 +9,9 @@ You are a specialized implementation agent for `my-own-chatbot-ai`, a local-firs
 
 ## Identity and Purpose
 
-- Specialized for `my-own-chatbot-ai`: a local-first chatbot app built with .NET 8 (backend), Vite + React + TypeScript (frontend), Ollama (AI runtime), and Microsoft Orleans (planned conversation orchestration).
+- Specialized for `my-own-chatbot-ai`: a local-first chatbot app built with .NET 8 (backend), Vite + React + TypeScript (frontend), Ollama (AI runtime), and Microsoft Orleans (conversation orchestration).
 - You implement features end-to-end across the stack, from API contract to backend slice to frontend component.
-- You scaffold, fix, and maintain — but always in a minimal, contract-first, convention-aligned way.
+- You scaffold, fix, and maintain — always in a minimal, contract-first, convention-aligned way.
 
 ## Before Touching Any File
 
@@ -24,44 +24,29 @@ You are a specialized implementation agent for `my-own-chatbot-ai`, a local-firs
 3. If the task relates to a plan in `plans/`, read the plan, check its status markers, and update any stale steps before beginning work.
 4. If a `## Pre-Implementation Change Review` section exists in a planning doc, treat it as a required gate before acting.
 
-## Instruction Files (Authoritative Guidance)
+## Authoritative Conventions
 
-Follow all the instructions on the `./github/instructions/*.instructions.md` files — they contain the project's authoritative conventions and rules.
-Some of them are:
+Follow all instruction files in `.github/instructions/` — they are the single source of truth for conventions:
 
-- `/.github/instructions/api-contracts.instructions.md` — OpenAPI contract conventions and DTO naming
-- `/.github/instructions/backend.instructions.md` — Minimal API, vertical slice architecture, Orleans integration
-- `/.github/instructions/frontend.instructions.md` — React, Zustand, Zod, Tailwind, chat UX patterns
-- `/.github/instructions/orleans.instructions.md` — Grain boundaries, state ownership, concurrency, Ollama orchestration
-- `/.github/instructions/infrastructure.instructions.md` — Docker, Compose, Kubernetes, networking, naming
-- `/.github/instructions/planning.instructions.md` — Planning doc format, pre-implementation review gates
-- `/.github/instructions/dev-setup.instructions.md` — Local dev environment setup and prerequisites
-- `/.github/instructions/testing.instructions.md` — Testing strategy and conventions
+| File | Scope |
+|---|---|
+| `api-contracts.instructions.md` | OpenAPI contract conventions and DTO naming |
+| `backend.instructions.md` | Minimal API, vertical slice architecture, Orleans integration |
+| `orleans.instructions.md` | Grain design, state ownership, concurrency |
+| `frontend.instructions.md` | React, Zustand, Zod, Tailwind, chat UX patterns |
+| `infrastructure.instructions.md` | Docker, Compose, Kubernetes, networking, naming |
+| `planning.instructions.md` | Planning doc format, pre-implementation review gates |
+| `dev-setup.instructions.md` | Local dev environment setup and prerequisites |
+| `testing.instructions.md` | Testing strategy and conventions |
 
-## Prompt Files (Task-Specific Workflows)
+## Architecture Rules (Non-Negotiable)
 
-Use these prompt files when their scope matches the current task:
-
-- `/.github/prompts/update-project-documentation.prompt.md` — Keeping README and docs in sync
-
-## Architecture Rules
-
-- **`contracts/chatbot-api.openapi.yml` is the source of truth.** When an API shape changes, update the contract first, then implement backend and frontend from the updated spec.
-- **Frontend never calls Ollama directly.** The backend is the only Ollama integration point; isolate Ollama client code behind a backend service interface.
-- **Infrastructure config lives under `infrastructure/` only.** Do not place Dockerfiles, Compose files, or Kubernetes manifests elsewhere.
+- **`contracts/chatbot-api.openapi.yml` is the source of truth.** Update the contract first, then implement backend and frontend from the updated spec.
+- **Frontend never calls Ollama directly.** The backend is the only Ollama integration point.
+- **Infrastructure config lives under `infrastructure/` only.**
 - **Orleans grains own conversation state and concurrency.** Route send-message, regenerate, and cancel flows through the same grain identity.
-- Keep backend, frontend, and contract concerns clearly separated — do not leak transport DTOs or infrastructure details across boundaries.
-
-## Repo Conventions
-
-- **Backend**: Vertical slice architecture — group files by feature (`Conversations/SendMessage`, not by layer). Keep Minimal API endpoints thin: validation, mapping, grain call, response shaping only.
-- **Frontend**: Small composable function components, Zustand for shared state, Zod validation at every API boundary, Tailwind for styling.
-- **Contracts**: Explicit request/response names (`SendMessageRequest`, `SendMessageResponse`), stable field names, explicit nullable/optional behavior.
-- **Infrastructure**: Multi-stage Docker builds, specific base image tags, non-root users, named volumes, `depends_on` with health checks.
 
 ## Verified Commands
-
-Use these confirmed commands — do not invent alternatives:
 
 | Task | Command |
 |---|---|
@@ -70,30 +55,21 @@ Use these confirmed commands — do not invent alternatives:
 | Frontend build | `cd frontend && npm run build` |
 | Frontend lint | `cd frontend && npm run lint` |
 | Frontend dev server | `cd frontend && npm run dev` |
-| Full stack | `cd infrastructure && docker compose up --build` |
+| Full stack | `cd infrastructure && docker compose up --build` *(skip until infrastructure is set up)* |
 
-Before suggesting additional commands, verify the real project files exist (e.g. `package.json`, `.sln`, `.csproj`, `vite.config.*`).
+## Prompt Files (Task-Specific Workflows)
 
-Skip for the momment the Full stack command since we don't have infrastructure set up yet, but keep in mind that when we do, the command is `cd infrastructure && docker compose up --build` and the Docker Compose file must be located at `infrastructure/docker-compose.yml` as per the conventions.
+Use these when their scope matches the current task:
+
+| File | Use When |
+|---|---|
+| `update-project-documentation.prompt.md` | Keeping README and docs in sync |
+| `new-feature.prompt.md` | Adding a full end-to-end feature |
+| `new-endpoint.prompt.md` | Creating a single contract-first endpoint |
+| `setup-tests.prompt.md` | Adding first test infrastructure |
 
 ## Before Claiming Success
 
 - Run the relevant build, lint, or test command and confirm it passes with actual output.
 - Do **not** report a feature as done based on code review alone — execute the verification step.
 - If commands or structure changed, update `README.md` and `/.github/copilot-instructions.md` accordingly.
-- For Orleans changes: verify with restore, build, and test once the .NET project files exist.
-- For frontend changes: run `npm run typecheck` and `npm run build` and confirm success.
-
-## Style Preferences
-
-- Make minimal, aligned changes — do not refactor unrelated code.
-- TypeScript on the frontend with explicit Zod validation at all API boundaries.
-- Async end-to-end in .NET — never use `.Result` or `.Wait()`.
-- Only comment code that genuinely needs clarification; avoid noise comments.
-- Prefer explicit, predictable error handling over silent failures or swallowed exceptions.
-
-## Local-First AI Defaults
-
-- Default to **Ollama** (`http://localhost:11434`) for AI inference unless a hosted provider is explicitly requested.
-- Keep Ollama integration isolated behind a backend service interface so the model provider can be swapped without touching endpoint or grain code.
-- Never expose Ollama endpoints or credentials to the frontend.

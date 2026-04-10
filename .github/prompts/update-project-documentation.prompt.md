@@ -12,8 +12,8 @@ Follow these workspace references first:
 - [Frontend instructions](../instructions/frontend.instructions.md)
 - [Orleans instructions](../instructions/orleans.instructions.md)
 - [API contract instructions](../instructions/api-contracts.instructions.md)
+- [Planning instructions](../instructions/planning.instructions.md)
 - [Main README](../../README.md)
-- [Scaffolding plan](../../plans/old/scaffolding-plan.md)
 - [API contracts folder](../../contracts/README.md)
 
 Task:

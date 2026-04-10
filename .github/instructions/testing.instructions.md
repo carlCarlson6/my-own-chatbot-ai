@@ -1,7 +1,7 @@
 ---
 description: "Use when writing, running, or verifying tests for the chatbot app backend, frontend, or integration points."
 name: "Testing Guidelines"
-applyTo: "**/*.{cs,ts,tsx}"
+applyTo: "{backend,frontend}/**/*.{cs,ts,tsx}"
 ---
 # Testing Guidelines
 
