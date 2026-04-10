@@ -1,5 +1,7 @@
 # Scaffolding Plan
 
+_Last updated: 2026-04-10_
+
 ## Goal
 
 Create a minimal but clean foundation for a local-first chatbot app using:
@@ -51,6 +53,7 @@ Before continuing work from this plan, first confirm the repo has not changed si
 - Max message size (8,000 chars) validated in `SendMessageEndpoint`; clean `ApiError` payloads returned for Ollama failures.
 - `POST /api/conversations/send` now returns a real Ollama-backed reply when Ollama is running.
 - See `docs/backend-ollama-communication-plan.md` for full details.
+- Frontend wiring to the live backend API is tracked separately in `docs/frontend-chat-ui-plan.md`.
 
 ## MVP defaults
 
@@ -67,4 +70,6 @@ Before continuing work from this plan, first confirm the repo has not changed si
 3. [x] Scaffold the frontend app and verify build/run commands
 4. [x] Add the backend-only Ollama client layer (`IOllamaClient`, `OllamaHttpClient`, `OllamaOptions`)
 5. [x] Add Orleans hosting and conversation grain orchestration (see `docs/backend-ollama-communication-plan.md`)
-6. [ ] Wire the frontend send-message flow to the real backend + Ollama
+6. [x] Frontend chat UI implementation tracked in `docs/frontend-chat-ui-plan.md`
+
+All immediate next actions are complete. This scaffolding plan is done — further implementation work is tracked in dedicated plans (`docs/frontend-chat-ui-plan.md`, `docs/backend-ollama-communication-plan.md`).
