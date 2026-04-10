@@ -107,11 +107,15 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 
 ## Plans
 
+### WIP / In-Progress
+
+- [`plans/post-mvp-features-plan.md`](plans/post-mvp-features-plan.md) — Post-MVP features: token streaming, conversation sidebar, and test infrastructure.
+
 ### Completed
 
 Plans that have been fully executed and are kept for historical reference.
 
-- [`plans/frontend-chat-ui-plan.md`](plans/frontend-chat-ui-plan.md) — Frontend chat UI: API client (native fetch + Zod), Zustand store, 6 React components, end-to-end wiring, and UX polish. All 5 phases ✅ done.
+- [`plans/old/frontend-chat-ui-plan.md`](plans/old/frontend-chat-ui-plan.md) — Frontend chat UI: API client (native fetch + Zod), Zustand store, 6 React components, end-to-end wiring, and UX polish. All 5 phases ✅ done.
 - [`plans/old/backend-ollama-communication-plan.md`](plans/old/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: all 5 phases ✅ done.
 - [`plans/old/scaffolding-plan.md`](plans/old/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration. All 6 steps complete; frontend wiring tracked in `plans/frontend-chat-ui-plan.md`.
 - [`plans/old/copilot-workflow-improvement-plan.md`](plans/old/copilot-workflow-improvement-plan.md) — Copilot workflow improvement plan: dev-setup instructions, testing guidelines, chatbot-builder agent, and prompt cleanup.
