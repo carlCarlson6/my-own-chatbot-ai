@@ -100,7 +100,16 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 - `infrastructure/` owns all Docker and Kubernetes configuration; no Dockerfiles live elsewhere.
 - Ollama is a backend-only integration boundary.
 
-## Completed Plans
+## Plans
+
+### WIP / In-Progress
+
+Plans that are partially done or still being executed.
+
+- [`docs/scaffolding-plan.md`](docs/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration (step 6 — frontend wiring to live backend — still pending).
+- [`docs/backend-ollama-communication-plan.md`](docs/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: Phases 1–4 ✅ done; Phase 5 verification checklist still pending.
+
+### Completed
 
 Plans that have been fully executed and are kept for historical reference.
 
