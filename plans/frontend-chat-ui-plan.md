@@ -135,7 +135,7 @@ frontend/src/
 
 ## Execution Plan
 
-### Phase 1 — API client layer ⏳ Pending
+### Phase 1 — API client layer ✅ Done
 
 **Goal:** typed, Zod-validated fetch functions that mirror every endpoint in `contracts/chatbot-api.openapi.yml`.
 
@@ -183,7 +183,7 @@ frontend/src/
 
 ---
 
-### Phase 2 — Zustand store ⏳ Pending
+### Phase 2 — Zustand store ✅ Done
 
 **Goal:** a single Zustand store that owns all conversation and UI state the components depend on.
 
@@ -234,7 +234,7 @@ frontend/src/
 
 ---
 
-### Phase 3 — Core chat components ⏳ Pending
+### Phase 3 — Core chat components ✅ Done
 
 **Goal:** build the presentational layer — each component with a clear, single responsibility.
 
@@ -283,7 +283,7 @@ frontend/src/
 
 ---
 
-### Phase 4 — End-to-end wiring ⏳ Pending
+### Phase 4 — End-to-end wiring ✅ Done
 
 **Goal:** connect the store and components into a fully working send → API → update → re-render loop.
 
@@ -318,7 +318,7 @@ frontend/src/
 
 ---
 
-### Phase 5 — Loading, error, and polish ⏳ Pending
+### Phase 5 — Loading, error, and polish ✅ Done
 
 **Goal:** production-ready UX states and clean visual polish.
 

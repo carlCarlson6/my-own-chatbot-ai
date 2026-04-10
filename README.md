@@ -8,7 +8,7 @@ My own chatbot web app.
 - The checked-in implementation is a **.NET 8 Minimal API** backend under `backend/src/MyOwnChatbotAi.Api`.
 - **Conversation endpoints** (`create`, `send`, `history`) are now orchestrated by **Microsoft Orleans** (`ConversationGrain`) which delegates message generation to `IOllamaClient`.
 - **Model listing** (`GET /api/models`) calls **Ollama** directly via the backend client layer, with an automatic fallback to the configured allowlist when Ollama is unavailable.
-- A frontend app is scaffolded under `frontend/` using **Vite + React + TypeScript + Tailwind CSS + Zustand + Zod**.
+- A frontend chat UI is implemented under `frontend/` — Axios + Zod API client layer, Zustand store, and React components (MessageList, MessageComposer, ModelSelector, ConversationHeader, ChatLayout) are all wired to the backend. The Vite dev server proxies `/api/*` to `localhost:5050`.
 - Infrastructure is fully configured under `infrastructure/` — Docker (standalone + Compose) and Kubernetes manifests for all three services.
 
 ## Technologies
@@ -19,7 +19,7 @@ My own chatbot web app.
 - **OpenAPI 3.0** contract-first API design
 - **Ollama client layer** — `IOllamaClient` / `OllamaHttpClient` / `OllamaOptions` registered in the backend; model listing calls Ollama with allowlist-based fallback
 - **Microsoft Orleans** — `ConversationGrain` owns conversation state and orchestrates Ollama-backed message generation
-- **Vite + React + TypeScript** frontend with Tailwind CSS, Zustand, and Zod
+- **Vite + React + TypeScript** frontend with Tailwind CSS, Zustand, and Zod — **fully wired to the backend API** with a typed Axios client, Zod-validated responses, and a Zustand store driving the chat UI
 - **Docker / Docker Compose** for containerised local and production-like runs
 - **Kubernetes** manifests targeting the `chatbot-ai` namespace
 
@@ -88,8 +88,9 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 | Run API | `dotnet run --project backend/src/MyOwnChatbotAi.Api` | Starts the API on `http://localhost:5050` |
 | Smoke check root | `curl http://localhost:5050/` | Returns `{"service":"my-own-chatbot-ai-api","status":"ok"}` |
 | Smoke check models | `curl http://localhost:5050/api/models` | Returns models from Ollama (filtered by allowlist), or falls back to the configured `llama3.1` / `mistral` allowlist when Ollama is unreachable |
-| Build frontend | `cd frontend && npm run build` | Produces `frontend/dist/` |
-| Lint frontend | `cd frontend && npm run lint` | ESLint passes |
+| Build frontend | `cd frontend && npm run build` | Produces `frontend/dist/` — zero TypeScript errors |
+| Lint frontend | `cd frontend && npm run lint` | ESLint passes — zero errors |
+| Dev frontend | `cd frontend && npm run dev` | Vite dev server on `http://localhost:5173`; `/api` proxied to `http://localhost:5050` |
 | Validate Compose | `cd infrastructure && docker compose -f docker-compose.yml config` | Prints resolved config with no errors |
 
 ## Architecture Boundaries
@@ -118,5 +119,5 @@ Plans that have been fully executed and are kept for historical reference.
 
 ## Next Steps
 
-1. Wire the frontend to the live backend API and verify full end-to-end chat.
-2. Add token streaming support (deferred from MVP).
+1. Add token streaming support (deferred from MVP).
+2. Add conversation history browser / sidebar.

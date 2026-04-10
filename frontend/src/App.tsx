@@ -1,7 +1,13 @@
+import { useEffect } from 'react'
+import { useChatStore } from './store/chatStore'
+import { ChatLayout } from './components/ChatLayout'
+
 export default function App() {
-  return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center">
-      <p className="text-xl">Chatbot UI — coming soon</p>
-    </div>
-  )
+  const loadModels = useChatStore((s) => s.loadModels)
+
+  useEffect(() => {
+    void loadModels()
+  }, [loadModels])
+
+  return <ChatLayout />
 }
