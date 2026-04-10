@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: chatbot-ai
+  labels:
+    app: backend
+    project: my-own-chatbot-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+        project: my-own-chatbot-ai
+    spec:
+      containers:
+        - name: backend
+          # Replace with your actual image registry path when pushing to a registry.
+          # Example: ghcr.io/<your-org>/chatbot-ai-backend:latest
+          image: chatbot-ai/backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5050
+              name: http
+          envFrom:
+            - configMapRef:
+                name: backend-config
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5050
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5050
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

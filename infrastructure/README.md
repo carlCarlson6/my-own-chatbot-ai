@@ -1,0 +1,452 @@
+# Infrastructure
+
+This folder contains all infrastructure configuration for **my-own-chatbot-ai**.
+
+_Last updated: 2026-04-10_
+
+---
+
+## Table of Contents
+
+1. [Quick Start](#quick-start)
+2. [Architecture Overview](#architecture-overview)
+3. [Folder Structure](#folder-structure)
+4. [Prerequisites](#prerequisites)
+5. [Docker — Standalone Containers](#docker--standalone-containers)
+6. [Docker Compose — Full Stack](#docker-compose--full-stack)
+7. [Kubernetes](#kubernetes)
+8. [Environment Variables](#environment-variables)
+9. [Networking](#networking)
+10. [Storage](#storage)
+11. [GPU Support (Ollama)](#gpu-support-ollama)
+12. [Adding a New Service](#adding-a-new-service)
+
+---
+
+## Quick Start
+
+> **All commands below assume the repo root as the working directory** unless stated otherwise.
+
+### Run everything with Docker Compose
+
+```bash
+# 1. Build all images and start all services (production-like)
+cd infrastructure
+docker compose -f docker-compose.yml up --build
+
+# 2. Or run in the background
+cd infrastructure
+docker compose -f docker-compose.yml up --build -d
+
+# 3. Tail logs
+docker compose logs -f
+
+# 4. Stop everything
+docker compose down
+```
+
+| Service  | URL                           |
+|----------|-------------------------------|
+| Frontend | http://localhost:3000         |
+| Backend  | http://localhost:5050         |
+| Ollama   | http://localhost:11434        |
+
+### Run with hot reload (local development)
+
+```bash
+cd infrastructure
+docker compose up --build   # override file is merged automatically
+```
+
+| Service          | URL                           |
+|------------------|-------------------------------|
+| Frontend (HMR)   | http://localhost:5173         |
+| Backend (watch)  | http://localhost:5050         |
+| Ollama           | http://localhost:11434        |
+
+### Run a single service standalone
+
+```bash
+# Backend
+docker build -f infrastructure/docker/backend/Dockerfile -t chatbot-ai/backend .
+docker run --rm -p 5050:5050 chatbot-ai/backend
+
+# Frontend
+docker build -f infrastructure/docker/frontend/Dockerfile -t chatbot-ai/frontend .
+docker run --rm -p 3000:80 chatbot-ai/frontend
+
+# Ollama
+docker build -f infrastructure/docker/ollama/Dockerfile -t chatbot-ai/ollama .
+docker run --rm -p 11434:11434 -v ollama_data:/root/.ollama chatbot-ai/ollama
+```
+
+### Deploy to Kubernetes
+
+```bash
+# Apply namespace first, then all manifests
+kubectl apply -f infrastructure/kubernetes/namespace.yaml
+kubectl apply -R -f infrastructure/kubernetes/
+
+# Watch rollout
+kubectl -n chatbot-ai rollout status deployment/backend
+kubectl -n chatbot-ai rollout status deployment/frontend
+kubectl -n chatbot-ai rollout status deployment/ollama
+
+# Port-forward for local access (kind / minikube)
+kubectl -n chatbot-ai port-forward svc/frontend 3000:80
+kubectl -n chatbot-ai port-forward svc/backend  5050:5050
+kubectl -n chatbot-ai port-forward svc/ollama   11434:11434
+```
+
+---
+
+## Architecture Overview
+
+The application is composed of three services:
+
+| Service      | Technology            | Default Port | Role                             |
+|--------------|-----------------------|:------------:|----------------------------------|
+| **backend**  | .NET 8 Minimal API    | `5050`       | Chat API, business logic, Orleans grain host (planned) |
+| **frontend** | Vite + React + nginx  | `3000` (Docker) / `80` (k8s) | SPA served by nginx, proxies `/api/` to backend |
+| **ollama**   | Ollama                | `11434`      | Local LLM inference              |
+
+```
+Browser
+  │
+  ▼
+frontend (nginx :80)
+  │ proxies /api/* ──────────────────────────────────▶ backend (:5050)
+  │                                                          │
+  │                                                          │ HTTP
+  │                                                          ▼
+  │                                                    ollama (:11434)
+```
+
+---
+
+## Folder Structure
+
+```
+infrastructure/
+├── README.md                          ← this file
+├── docker-compose.yml                 ← production-like full-stack compose
+├── docker-compose.override.yml        ← local dev overrides (hot reload)
+├── docker/
+│   ├── backend/
+│   │   └── Dockerfile                 ← multi-stage .NET 8 build → aspnet runtime
+│   ├── frontend/
+│   │   ├── Dockerfile                 ← multi-stage node build → nginx serve
+│   │   ├── Dockerfile.dev             ← Vite dev server (used by override)
+│   │   └── nginx.conf                 ← nginx config: SPA fallback + API proxy
+│   └── ollama/
+│       ├── Dockerfile                 ← extends ollama/ollama with model pull script
+│       └── entrypoint.sh              ← starts Ollama, waits for readiness, pulls model
+└── kubernetes/
+    ├── namespace.yaml                 ← chatbot-ai namespace
+    ├── backend/
+    │   ├── configmap.yaml             ← env vars (ASPNETCORE_ENVIRONMENT, Ollama__BaseUrl)
+    │   ├── deployment.yaml            ← backend Deployment
+    │   └── service.yaml               ← ClusterIP service on port 5050
+    ├── frontend/
+    │   ├── configmap.yaml             ← nginx.conf injected as a ConfigMap
+    │   ├── deployment.yaml            ← frontend Deployment (nginx)
+    │   └── service.yaml               ← LoadBalancer service on port 80
+    └── ollama/
+        ├── persistentvolumeclaim.yaml ← 20 Gi PVC for model storage
+        ├── deployment.yaml            ← Ollama Deployment with init container model pull
+        └── service.yaml               ← ClusterIP service on port 11434
+```
+
+---
+
+## Prerequisites
+
+### Docker / Docker Compose
+
+| Tool           | Minimum version |
+|----------------|----------------|
+| Docker Engine  | 24+            |
+| Docker Compose | v2 (plugin)    |
+
+### Kubernetes
+
+| Tool      | Notes                                            |
+|-----------|--------------------------------------------------|
+| kubectl   | Configured to point at your target cluster       |
+| Cluster   | kind / minikube (local) or any cloud k8s cluster |
+
+### Source Code
+
+All Dockerfiles use **`..` (the repo root) as the build context** so they can reference both the `frontend/` and `backend/` source trees. Always run `docker build` or `docker compose` commands from the `infrastructure/` directory, or use the compose file flags documented below.
+
+---
+
+## Docker — Standalone Containers
+
+Each service can be built and run independently for rapid iteration.
+
+### Backend (standalone)
+
+```bash
+# From repo root
+docker build \
+  -f infrastructure/docker/backend/Dockerfile \
+  -t chatbot-ai/backend \
+  .
+
+docker run --rm -p 5050:5050 \
+  -e ASPNETCORE_ENVIRONMENT=Development \
+  chatbot-ai/backend
+```
+
+Verify: `curl http://localhost:5050/`
+
+### Frontend (standalone)
+
+```bash
+# From repo root
+docker build \
+  -f infrastructure/docker/frontend/Dockerfile \
+  -t chatbot-ai/frontend \
+  .
+
+docker run --rm -p 3000:80 chatbot-ai/frontend
+```
+
+Verify: open `http://localhost:3000` in a browser.
+
+> **Note:** In standalone mode the nginx `/api/` proxy will fail because no backend is running.
+> Use Docker Compose to run all services together.
+
+### Ollama (standalone)
+
+```bash
+# From repo root — default model: llama3.2
+docker build \
+  -f infrastructure/docker/ollama/Dockerfile \
+  -t chatbot-ai/ollama \
+  .
+
+# With a different model
+docker build \
+  --build-arg DEFAULT_MODEL=mistral \
+  -f infrastructure/docker/ollama/Dockerfile \
+  -t chatbot-ai/ollama \
+  .
+
+docker run --rm -p 11434:11434 \
+  -v ollama_data:/root/.ollama \
+  chatbot-ai/ollama
+```
+
+Verify: `curl http://localhost:11434/api/tags`
+
+---
+
+## Docker Compose — Full Stack
+
+### Production-like (all services)
+
+```bash
+cd infrastructure
+
+# Build and start all services
+docker compose up --build
+
+# Run in background
+docker compose up --build -d
+
+# Tail logs
+docker compose logs -f
+
+# Stop everything
+docker compose down
+```
+
+After startup:
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:5050`
+- Ollama API: `http://localhost:11434`
+
+### Local Development (hot reload)
+
+The `docker-compose.override.yml` file is automatically merged when you run `docker compose` from the `infrastructure/` directory. It replaces the nginx frontend with a Vite dev server and enables `dotnet watch` on the backend.
+
+```bash
+cd infrastructure
+docker compose up --build
+```
+
+Development URLs:
+- Frontend (Vite + HMR): `http://localhost:5173`
+- Backend (dotnet watch): `http://localhost:5050`
+- Ollama: `http://localhost:11434`
+
+To run **only production images** (ignoring the override):
+
+```bash
+cd infrastructure
+docker compose -f docker-compose.yml up --build
+```
+
+---
+
+## Kubernetes
+
+All manifests live in `infrastructure/kubernetes/` and target the `chatbot-ai` namespace.
+
+### Apply all manifests
+
+```bash
+# Create namespace first
+kubectl apply -f infrastructure/kubernetes/namespace.yaml
+
+# Apply all resources (backend, frontend, ollama)
+kubectl apply -R -f infrastructure/kubernetes/
+
+# Check rollout status
+kubectl -n chatbot-ai rollout status deployment/backend
+kubectl -n chatbot-ai rollout status deployment/frontend
+kubectl -n chatbot-ai rollout status deployment/ollama
+```
+
+### Verify services
+
+```bash
+kubectl -n chatbot-ai get pods
+kubectl -n chatbot-ai get services
+```
+
+### Access the application
+
+```bash
+# If using a LoadBalancer (cloud cluster)
+kubectl -n chatbot-ai get service frontend
+# Use the EXTERNAL-IP shown
+
+# If using minikube
+minikube service frontend -n chatbot-ai
+
+# If using kind with port-forwarding
+kubectl -n chatbot-ai port-forward svc/frontend 3000:80
+kubectl -n chatbot-ai port-forward svc/backend 5050:5050
+kubectl -n chatbot-ai port-forward svc/ollama 11434:11434
+```
+
+### Update a deployment image
+
+```bash
+# After pushing a new image to a registry:
+kubectl -n chatbot-ai set image deployment/backend backend=ghcr.io/<your-org>/chatbot-ai-backend:v2
+kubectl -n chatbot-ai rollout status deployment/backend
+```
+
+### Tear down
+
+```bash
+# Remove all resources in the namespace
+kubectl delete namespace chatbot-ai
+
+# Or remove selectively
+kubectl delete -R -f infrastructure/kubernetes/
+```
+
+---
+
+## Environment Variables
+
+### Backend
+
+| Variable                  | Default               | Description                        |
+|---------------------------|-----------------------|------------------------------------|
+| `ASPNETCORE_ENVIRONMENT`  | `Production`          | `Development` or `Production`      |
+| `ASPNETCORE_URLS`         | `http://+:5050`       | Kestrel listen address             |
+| `Ollama__BaseUrl`         | `http://ollama:11434` | Ollama service URL                 |
+
+### Ollama (Docker only)
+
+| Variable        | Default    | Description                              |
+|-----------------|------------|------------------------------------------|
+| `OLLAMA_HOST`   | `0.0.0.0`  | Interface to bind Ollama server          |
+| `DEFAULT_MODEL` | `llama3.2` | Model pulled at container startup        |
+
+---
+
+## Networking
+
+### Docker Compose
+
+Docker Compose creates a default bridge network named `chatbot-ai_default`. Services reference each other by service name (e.g. `backend` → `http://backend:5050`, `ollama` → `http://ollama:11434`).
+
+### Kubernetes
+
+All services are in the `chatbot-ai` namespace. DNS resolution follows the pattern:
+
+```
+<service-name>.<namespace>.svc.cluster.local
+# Shortened form used in configs:
+<service-name>   (within the same namespace)
+```
+
+Example: `http://ollama:11434` in the backend configmap resolves to `ollama.chatbot-ai.svc.cluster.local:11434`.
+
+---
+
+## Storage
+
+Ollama stores downloaded model weights in `/root/.ollama`. This is backed by:
+
+- **Docker Compose**: a named volume `chatbot-ollama-data` on the host.
+- **Kubernetes**: a `PersistentVolumeClaim` (`ollama-models-pvc`) requesting 20 Gi.
+
+Adjust the PVC size in `kubernetes/ollama/persistentvolumeclaim.yaml` based on the models you plan to run:
+
+| Model           | Approx. size |
+|-----------------|:------------:|
+| llama3.2 (3B)   | ~2 GB        |
+| mistral (7B)    | ~4 GB        |
+| llama3 (8B)     | ~5 GB        |
+| llama3 (70B)    | ~40 GB       |
+
+---
+
+## GPU Support (Ollama)
+
+### Docker Compose
+
+```bash
+# After installing the NVIDIA Container Toolkit:
+docker run --gpus all --rm -p 11434:11434 \
+  -v ollama_data:/root/.ollama \
+  chatbot-ai/ollama
+```
+
+To enable GPUs in Compose, add a `deploy` section to the `ollama` service in `docker-compose.yml`:
+
+```yaml
+ollama:
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+```
+
+### Kubernetes
+
+Uncomment the `nodeSelector`, `tolerations`, and `nvidia.com/gpu` resource limit sections in `kubernetes/ollama/deployment.yaml`. Requires the [NVIDIA GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/overview.html) to be installed in your cluster.
+
+---
+
+## Adding a New Service
+
+1. Create `infrastructure/docker/<service-name>/Dockerfile`.
+2. Add the service to `infrastructure/docker-compose.yml` and `docker-compose.override.yml` if it needs dev-mode overrides.
+3. Create the Kubernetes manifests under `infrastructure/kubernetes/<service-name>/`:
+   - `deployment.yaml`
+   - `service.yaml`
+   - `configmap.yaml` or `persistentvolumeclaim.yaml` as needed.
+4. Update this README with ports, environment variables, and networking notes.
+5. Update `.github/instructions/infrastructure.instructions.md` with any new conventions.

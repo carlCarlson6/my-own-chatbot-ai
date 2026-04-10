@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: chatbot-ai
+  labels:
+    app: ollama
+    project: my-own-chatbot-ai
+spec:
+  selector:
+    app: ollama
+  ports:
+    - name: http
+      port: 11434
+      targetPort: 11434
+      protocol: TCP
+  # ClusterIP: accessible only within the cluster.
+  # The backend service calls http://ollama:11434 via this service.
+  type: ClusterIP

@@ -31,14 +31,17 @@ Before continuing work from this plan, first confirm the repo has not changed si
 - Conversation and model endpoints are organized by feature and currently delegate to `InMemoryConversationService`.
 - Orleans hosting and the real Ollama integration layer are still pending for the next backend pass.
 
-### 3. Frontend scaffold ⏳ Pending
-- A `frontend/` app has not been checked into the repo yet.
-- When added, it should use Vite, React, TypeScript, Tailwind, Zustand, and Zod.
-- Verify real frontend commands only after the frontend files and scripts exist.
+### 3. Frontend scaffold ✅ Done
+- `frontend/` is checked in with **Vite + React + TypeScript + Tailwind CSS + Zustand + Zod**.
+- Verified commands:
+  - `npm run dev` — starts the Vite dev server
+  - `npm run build` — type-checks with `tsc -b` then produces a production bundle
+  - `npm run lint` — ESLint passes with zero warnings
 
 ### 4. End-to-end integration ⏳ Pending
-- Connect the future frontend send-message action to the backend endpoint.
+- Connect the frontend send-message action to the backend endpoint.
 - Replace the current stubbed assistant response with a real Orleans + Ollama flow.
+- See `docs/backend-ollama-communication-plan.md` for the detailed execution plan.
 
 ## MVP defaults
 
@@ -52,6 +55,6 @@ Before continuing work from this plan, first confirm the repo has not changed si
 
 1. [x] Finalize the OpenAPI contract
 2. [x] Scaffold the backend solution and Minimal API stub
-3. [ ] Add Orleans hosting and backend-only Ollama integration
-4. [ ] Scaffold the frontend app and basic chat shell
-5. [ ] Verify real frontend build/run commands and update `README.md`
+3. [x] Scaffold the frontend app and verify build/run commands
+4. [ ] Add Orleans hosting and backend-only Ollama integration (see `docs/backend-ollama-communication-plan.md`)
+5. [ ] Wire the frontend send-message flow to the real backend + Ollama

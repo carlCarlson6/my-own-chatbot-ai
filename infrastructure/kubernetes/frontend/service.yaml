@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: chatbot-ai
+  labels:
+    app: frontend
+    project: my-own-chatbot-ai
+spec:
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+  # Use LoadBalancer if your cluster has a cloud load balancer provisioner.
+  # Change to NodePort or ClusterIP + Ingress for local clusters (kind, minikube).
+  type: LoadBalancer

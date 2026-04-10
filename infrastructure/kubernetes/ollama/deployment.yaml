@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: chatbot-ai
+  labels:
+    app: ollama
+    project: my-own-chatbot-ai
+spec:
+  # Only one replica — Ollama does not support multi-replica horizontal scaling
+  # for inference out of the box. Scale vertically (larger node) instead.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  strategy:
+    # Recreate avoids two pods claiming the same PVC (ReadWriteOnce)
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ollama
+        project: my-own-chatbot-ai
+    spec:
+      # Uncomment to schedule onto GPU-enabled nodes
+      # nodeSelector:
+      #   kubernetes.io/accelerator: nvidia-tesla-t4
+      # tolerations:
+      #   - key: nvidia.com/gpu
+      #     operator: Exists
+      #     effect: NoSchedule
+      initContainers:
+        # Pull the default model before the main container starts.
+        # Change the model name to match your needs.
+        - name: pull-model
+          image: chatbot-ai/ollama:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              ollama serve &
+              sleep 5
+              ollama pull llama3.2
+              kill %1
+          volumeMounts:
+            - name: ollama-models
+              mountPath: /root/.ollama
+          env:
+            - name: OLLAMA_HOST
+              value: "0.0.0.0"
+      containers:
+        - name: ollama
+          image: chatbot-ai/ollama:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 11434
+              name: http
+          env:
+            - name: OLLAMA_HOST
+              value: "0.0.0.0"
+          volumeMounts:
+            - name: ollama-models
+              mountPath: /root/.ollama
+          readinessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+              # Uncomment if your nodes have NVIDIA GPUs:
+              # nvidia.com/gpu: "1"
+      volumes:
+        - name: ollama-models
+          persistentVolumeClaim:
+            claimName: ollama-models-pvc

@@ -1,0 +1,33 @@
+# docker-compose.override.yml
+#
+# Local development overrides — mount source for faster iteration.
+# Automatically applied when running `docker compose up` from infrastructure/.
+#
+# Usage:
+#   cd infrastructure
+#   docker compose up
+
+services:
+
+  backend:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    # Hot-reload: mount source and run via dotnet watch
+    volumes:
+      - ../backend:/app/src
+    command: >
+      dotnet watch run
+      --project /app/src/src/MyOwnChatbotAi.Api/MyOwnChatbotAi.Api.csproj
+      --urls http://+:5050
+
+  frontend:
+    # Replace the nginx image with a dev Vite server
+    build:
+      context: ..
+      dockerfile: infrastructure/docker/frontend/Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 5173

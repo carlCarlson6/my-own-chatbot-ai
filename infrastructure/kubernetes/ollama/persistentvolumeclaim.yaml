@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-models-pvc
+  namespace: chatbot-ai
+  labels:
+    app: ollama
+    project: my-own-chatbot-ai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # Adjust to match the models you plan to run.
+      # llama3.2 ~2 GB, mistral ~4 GB, llama3:8b ~5 GB, llama3:70b ~40 GB
+      storage: 20Gi
+  # Remove storageClassName to use the cluster default.
+  # Set explicitly for cloud providers: gp2 (AWS), standard (GKE), managed-csi (AKS).
+  # storageClassName: standard
