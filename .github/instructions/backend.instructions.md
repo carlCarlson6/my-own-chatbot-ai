@@ -91,7 +91,7 @@ public static class SendMessageEndpoint
         [FromServices] IConversationService conversationService,
         [FromBody] SendMessageRequest request)
     {
-      .... 
+      .... ENDPOINT IMPLEMENTATION GOES HERE ...
     }
 }
 ```
