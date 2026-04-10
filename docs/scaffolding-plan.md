@@ -9,6 +9,17 @@ Create a minimal but clean foundation for a local-first chatbot app using:
 - **Validation/UI contracts:** Zod + OpenAPI
 - **AI runtime:** Ollama
 
+## Pre-Implementation Change Review
+
+Before continuing work from this plan, first confirm the repo has not changed since this document was last updated.
+
+### Required review steps
+
+1. Inspect `README.md`, `docs/`, `contracts/`, and the relevant `backend/` or `frontend/` folders.
+2. Compare the current repo state against this plan and check for drift in structure, commands, status markers, or dependencies.
+3. Update this plan first if any step is stale, already completed, or needs reordering.
+4. Only after that review should implementation continue.
+
 ## Implementation order
 
 ### 1. Contract-first foundation ✅ Done
@@ -40,8 +51,7 @@ Create a minimal but clean foundation for a local-first chatbot app using:
 ## Immediate next actions
 
 1. [x] Finalize the OpenAPI contract
-2. [x] Scaffold the backend solution and Minimal API stub
+2. [x] Scaffold the backend solution and Orleans host
 3. [ ] Resolve the local `npm`/Node issue and continue the frontend scaffold
-4. [ ] Add Orleans hosting and backend-only Ollama integration
-5. [ ] Scaffold the frontend app and basic chat shell
-6. [ ] Verify real frontend build/run commands and update `README.md`
+4. [ ] Scaffold the frontend app and basic chat shell
+5. [ ] Verify real frontend build/run commands and update `README.md`
