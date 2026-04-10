@@ -76,10 +76,50 @@ For each category, list specific findings with the file name and the problem or 
 - Are there prompts referenced in agent files that do not exist yet?
 
 ### Category 6 — Skills coverage
-- Does `.github/skills/` exist? If not, is that a gap?
-- A **skill** is appropriate for a reusable, self-contained capability that can be invoked across many contexts (e.g. "explain this code", "generate a test", "summarise a PR"). It differs from a prompt (which is a guided multi-step workflow) and an agent (which is a stateful autonomous executor).
-- Are there capabilities currently implemented as prompts or agent instructions that would be better as skills (short, single-purpose, reusable)?
-- Are there missing skills for common tasks in this project (e.g. "explain an Orleans grain", "validate OpenAPI schema", "generate Zod schema from OpenAPI")?
+
+A **skill** is appropriate for a reusable, self-contained capability that is **invoked on demand** to perform a specific action. It differs from:
+- An **instruction** — passive, always-on, shapes how AI writes code for matching files
+- A **prompt** — a guided multi-step workflow with verification and output format
+- An **agent** — a stateful autonomous executor with a defined identity
+
+**The key test for converting an instruction to a skill:**  
+> Does this file contain *passive coding conventions* (→ keep as instruction), or does it contain an *action/workflow/checklist to execute* (→ candidate for skill)?
+
+Apply this test to every instruction file:
+
+#### `dev-setup.instructions.md`
+- Current `applyTo: README.md, .github/**` — fires when editing README or .github files
+- Content is a **setup checklist**: verify tool versions, run setup commands, troubleshoot Node/npm
+- This is not a coding convention — it's an on-demand action: *"check my environment is set up correctly"*
+- **Verdict**: Strong skill candidate → `setup-local-env` or `check-prerequisites`
+- Why: An instruction that injects "install nvm, run dotnet --version" into every README edit is noise. A skill you explicitly invoke when onboarding or troubleshooting is much more useful.
+
+#### `testing.instructions.md`
+- Current `applyTo: {backend,frontend}/**/*.{cs,ts,tsx}` — fires for all code files
+- Content is **mixed**: passive testing conventions (frameworks, patterns, naming) + an active "Verification Before Completion" block listing commands to run
+- **Verdict**: Split — keep passive conventions as instruction; extract "Verification Before Completion" into a `verify-build` skill
+- Why: "Run `dotnet build`, `npm run build`, `npm run lint` and confirm they pass" is an action, not a coding convention. It belongs in a skill you invoke at the end of a task, not injected into context while writing every test file.
+
+#### `planning.instructions.md`
+- Current `applyTo: plans/**/*.md` — fires when editing plan files
+- Content is **mixed**: passive format rules (required sections, naming, status markers) + a full plan **template** to scaffold from
+- **Verdict**: Partial skill candidate — keep the format rules as instruction; the template scaffold is a `scaffold-plan` skill
+- Why: The naming and section rules are genuine conventions that should guide editing any plan file. But the template is a one-time creation action — it belongs in a skill (or a prompt) you invoke when starting a new plan.
+
+#### Instructions that are correctly instructions (do not convert)
+- `api-contracts.instructions.md` — pure passive conventions for editing OpenAPI YAML. Auto-loading is correct.
+- `backend.instructions.md` — passive coding conventions for backend C# files. Auto-loading is correct.
+- `frontend.instructions.md` — passive conventions for frontend TS/TSX. Auto-loading is correct.
+- `orleans.instructions.md` — passive grain design rules for C# files. Auto-loading is correct.
+- `infrastructure.instructions.md` — passive conventions for infra files. Auto-loading is correct.
+
+#### Missing skills to consider
+Based on the codebase and tech stack, evaluate whether these skills would be useful:
+- `check-prerequisites` — verify .NET 8, Node 18+, Ollama are installed and running
+- `verify-build` — run backend build + frontend build + lint and report pass/fail
+- `scaffold-plan` — create a new `plans/*.plan.md` from the canonical template
+- `explain-grain` — explain an Orleans grain's state, lifecycle, and activation in plain language
+- `validate-contract` — check that backend DTOs and frontend Zod schemas match `chatbot-api.openapi.yml`
 
 ### Category 7 — Staleness and accuracy
 - Do any files reference paths, commands, plans, or features that no longer exist?
