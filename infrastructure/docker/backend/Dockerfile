@@ -5,14 +5,13 @@ WORKDIR /src
 # Copy solution and project file first to leverage layer caching
 COPY backend/src/MyOwnChatbotAi.sln ./
 COPY backend/src/MyOwnChatbotAi.Api/MyOwnChatbotAi.Api.csproj MyOwnChatbotAi.Api/
-RUN dotnet restore MyOwnChatbotAi.Api/MyOwnChatbotAi.Api.csproj
+RUN dotnet restore MyOwnChatbotAi.sln
 
 # Copy source and publish
 COPY backend/src/MyOwnChatbotAi.Api/ MyOwnChatbotAi.Api/
 RUN dotnet publish MyOwnChatbotAi.Api/MyOwnChatbotAi.Api.csproj \
     -c Release \
-    -o /app/publish \
-    --no-restore
+    -o /app/publish
 
 # ── Runtime stage ──────────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
