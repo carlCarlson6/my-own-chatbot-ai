@@ -57,3 +57,41 @@ applyTo: "**/*.{cs,json}"
 
 - This repository is still in an early scaffold stage. Verify actual folders, project files, and Orleans setup before assuming structure or commands.
 - Keep changes minimal and aligned with the documented stack and integration boundaries.
+
+## Examples
+
+### Example Endpoint File Structure
+
+Code structure:
+```Backend/
+  Conversations/
+    SendMessage/
+      SendMessageEndpoint.cs
+      SendMessageRequest.cs
+      SendMessageResponse.cs
+```
+
+SendMessageEndpoint.cs:
+```csharp[ApiController]
+public static class SendMessageEndpoint
+{
+    private const string Route = "/api/conversations/send";
+
+    public static void MapSendMessageEndpoint(this WebApplication app)
+    {
+        app.MapPost(Route, async (SendMessageRequest request, IConversationService conversationService) =>
+        {
+            // Validate request, delegate to Orleans grain, and return response
+            var response = await conversationService.SendMessageAsync(request);
+            return Results.Ok(response);
+        });
+    }
+
+    private static async Task<IResult> Handle(
+        [FromServices] IConversationService conversationService,
+        [FromBody] SendMessageRequest request)
+    {
+      .... 
+    }
+}
+```

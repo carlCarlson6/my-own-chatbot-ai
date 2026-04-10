@@ -6,11 +6,10 @@ My own chatbot web app.
 
 - The public API contract lives in `contracts/chatbot-api.openapi.yml` and is the source of truth.
 - The checked-in implementation is a **.NET 8 Minimal API** backend under `backend/src/MyOwnChatbotAi.Api`.
-- **Conversation endpoints** (`create`, `send`, `history`) use an **in-memory stub service** for local development.
+- **Conversation endpoints** (`create`, `send`, `history`) are now orchestrated by **Microsoft Orleans** (`ConversationGrain`) which delegates message generation to `IOllamaClient`.
 - **Model listing** (`GET /api/models`) calls **Ollama** directly via the backend client layer, with an automatic fallback to the configured allowlist when Ollama is unavailable.
 - A frontend app is scaffolded under `frontend/` using **Vite + React + TypeScript + Tailwind CSS + Zustand + Zod**.
 - Infrastructure is fully configured under `infrastructure/` — Docker (standalone + Compose) and Kubernetes manifests for all three services.
-- **Orleans** orchestration is the planned next step. The backend-only **Ollama client layer** (`IOllamaClient`, `OllamaHttpClient`, `OllamaOptions`) is already implemented and registered.
 
 ## Technologies
 
@@ -19,14 +18,15 @@ My own chatbot web app.
 - **.NET 8** Minimal APIs (vertical slice architecture)
 - **OpenAPI 3.0** contract-first API design
 - **Ollama client layer** — `IOllamaClient` / `OllamaHttpClient` / `OllamaOptions` registered in the backend; model listing calls Ollama with allowlist-based fallback
+- **Microsoft Orleans** — `ConversationGrain` owns conversation state and orchestrates Ollama-backed message generation
 - **Vite + React + TypeScript** frontend with Tailwind CSS, Zustand, and Zod
 - **Docker / Docker Compose** for containerised local and production-like runs
 - **Kubernetes** manifests targeting the `chatbot-ai` namespace
 
 ### Planned next layers
 
-- **Microsoft Orleans** for conversation orchestration and state ownership
-- Wire `send-message` and `create-conversation` flows through Ollama (Ollama client is ready; conversation endpoints still use the in-memory stub)
+- Wire the frontend send-message flow to the live backend API and verify full end-to-end chat.
+- Token streaming support (deferred from MVP).
 
 ## Repo Structure
 
@@ -108,6 +108,5 @@ Plans that have been fully executed and are kept for historical reference.
 
 ## Next Steps
 
-1. Replace the in-memory conversation stub with Orleans-backed orchestration.
-2. Wire `send-message` and `create-conversation` to the existing Ollama client (client layer is done; endpoint delegation is still in-memory).
-3. Wire the frontend to the live backend API and verify full end-to-end chat.
+1. Wire the frontend to the live backend API and verify full end-to-end chat.
+2. Add token streaming support (deferred from MVP).

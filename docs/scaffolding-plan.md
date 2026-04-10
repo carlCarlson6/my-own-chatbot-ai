@@ -44,11 +44,13 @@ Before continuing work from this plan, first confirm the repo has not changed si
 - `ListModelsEndpoint` calls Ollama via `IOllamaClient` and falls back to the configured allowlist when Ollama is unavailable.
 - The in-memory conversation service is still used for `send` and `create` flows.
 
-### 5. End-to-end integration ⏳ Pending
-- Add Orleans hosting and wire conversation orchestration through grains.
-- Refactor `SendMessageEndpoint` and `CreateConversationEndpoint` to delegate to the Orleans grain → Ollama path.
-- Connect the frontend send-message action to the backend endpoint.
-- See `docs/backend-ollama-communication-plan.md` for the detailed execution plan.
+### 5. End-to-end integration ✅ Backend Orleans + Ollama wired
+- Orleans silo (`UseLocalhostClustering` + `AddMemoryGrainStorage("conversations")`) is running in `Program.cs`.
+- `IConversationGrain` / `ConversationGrain` own conversation state and delegate message generation to `IOllamaClient`.
+- `SendMessageEndpoint`, `CreateConversationEndpoint`, and `GetConversationHistoryEndpoint` now delegate to the grain via `IGrainFactory`.
+- Max message size (8,000 chars) validated in `SendMessageEndpoint`; clean `ApiError` payloads returned for Ollama failures.
+- `POST /api/conversations/send` now returns a real Ollama-backed reply when Ollama is running.
+- See `docs/backend-ollama-communication-plan.md` for full details.
 
 ## MVP defaults
 
@@ -64,5 +66,5 @@ Before continuing work from this plan, first confirm the repo has not changed si
 2. [x] Scaffold the backend solution and Minimal API stub
 3. [x] Scaffold the frontend app and verify build/run commands
 4. [x] Add the backend-only Ollama client layer (`IOllamaClient`, `OllamaHttpClient`, `OllamaOptions`)
-5. [ ] Add Orleans hosting and conversation grain orchestration (see `docs/backend-ollama-communication-plan.md`)
+5. [x] Add Orleans hosting and conversation grain orchestration (see `docs/backend-ollama-communication-plan.md`)
 6. [ ] Wire the frontend send-message flow to the real backend + Ollama

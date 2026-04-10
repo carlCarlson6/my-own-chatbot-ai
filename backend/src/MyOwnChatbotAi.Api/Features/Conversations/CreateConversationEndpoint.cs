@@ -1,5 +1,5 @@
 using MyOwnChatbotAi.Api.Contracts;
-using MyOwnChatbotAi.Api.Services;
+using MyOwnChatbotAi.Api.Grains;
 
 namespace MyOwnChatbotAi.Api.Features.Conversations;
 
@@ -9,9 +9,11 @@ public static class CreateConversationEndpoint
     {
         group.MapPost(
             string.Empty,
-            (CreateConversationRequest? request, IConversationService conversations) =>
+            async (CreateConversationRequest? request, IGrainFactory grains) =>
             {
-                var response = conversations.CreateConversation(request);
+                var conversationId = Guid.NewGuid();
+                var grain = grains.GetGrain<IConversationGrain>(conversationId);
+                var response = await grain.InitializeAsync(request?.Title ?? string.Empty, request?.Model ?? string.Empty);
                 return Results.Created($"/api/conversations/{response.ConversationId}/history", response);
             })
             .WithName("CreateConversation")

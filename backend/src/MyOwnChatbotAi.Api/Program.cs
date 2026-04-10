@@ -1,12 +1,9 @@
 using Microsoft.Extensions.Options;
 using MyOwnChatbotAi.Api.Features.Conversations;
 using MyOwnChatbotAi.Api.Features.Models;
-using MyOwnChatbotAi.Api.Services;
 using MyOwnChatbotAi.Api.Services.Ollama;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddSingleton<IConversationService, InMemoryConversationService>();
 
 builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection(OllamaOptions.SectionName));
 builder.Services.AddHttpClient<IOllamaClient, OllamaHttpClient>()
@@ -16,6 +13,12 @@ builder.Services.AddHttpClient<IOllamaClient, OllamaHttpClient>()
         client.BaseAddress = new Uri(opts.BaseUrl);
         client.Timeout = TimeSpan.FromSeconds(opts.TimeoutSeconds);
     });
+
+builder.Host.UseOrleans(silo =>
+{
+    silo.UseLocalhostClustering();
+    silo.AddMemoryGrainStorage("conversations");
+});
 
 var app = builder.Build();
 

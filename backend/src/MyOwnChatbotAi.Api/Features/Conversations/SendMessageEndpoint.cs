@@ -1,28 +1,45 @@
 using MyOwnChatbotAi.Api.Contracts;
-using MyOwnChatbotAi.Api.Services;
+using MyOwnChatbotAi.Api.Grains;
 
 namespace MyOwnChatbotAi.Api.Features.Conversations;
 
 public static class SendMessageEndpoint
 {
+    private const int MaxMessageLength = 8_000;
+
     public static RouteGroupBuilder MapSendMessageEndpoint(this RouteGroupBuilder group)
     {
         group.MapPost(
             "/send",
-            (SendMessageRequest request, IConversationService conversations) =>
+            async (SendMessageRequest request, IGrainFactory grains) =>
             {
+                if (request.Message is null || string.IsNullOrWhiteSpace(request.Message.Content))
+                {
+                    return Results.BadRequest(new ApiError("validation_error", "Message content is required.", "message"));
+                }
+
+                if (request.Message.Content.Length > MaxMessageLength)
+                {
+                    return Results.BadRequest(new ApiError(
+                        "validation_error",
+                        $"Message content must not exceed {MaxMessageLength} characters.",
+                        "message"));
+                }
+
+                var conversationId = request.ConversationId ?? Guid.NewGuid();
+                var grain = grains.GetGrain<IConversationGrain>(conversationId);
+
                 try
                 {
-                    var response = conversations.SendMessage(request);
+                    var response = await grain.SendMessageAsync(request.Message, request.Model);
                     return Results.Ok(response);
                 }
-                catch (ArgumentException ex)
+                catch (InvalidOperationException ex)
                 {
-                    return Results.BadRequest(new ApiError("validation_error", ex.Message, "message"));
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    return Results.NotFound(new ApiError("conversation_not_found", ex.Message, "conversationId"));
+                    return Results.Problem(
+                        detail: ex.Message,
+                        statusCode: StatusCodes.Status502BadGateway,
+                        title: "Upstream model error");
                 }
             })
             .WithName("SendMessage")

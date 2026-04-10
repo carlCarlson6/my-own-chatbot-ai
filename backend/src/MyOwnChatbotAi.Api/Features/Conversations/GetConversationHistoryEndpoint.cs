@@ -1,5 +1,5 @@
 using MyOwnChatbotAi.Api.Contracts;
-using MyOwnChatbotAi.Api.Services;
+using MyOwnChatbotAi.Api.Grains;
 
 namespace MyOwnChatbotAi.Api.Features.Conversations;
 
@@ -9,9 +9,10 @@ public static class GetConversationHistoryEndpoint
     {
         group.MapGet(
             "/{conversationId:guid}/history",
-            (Guid conversationId, IConversationService conversations) =>
+            async (Guid conversationId, IGrainFactory grains) =>
             {
-                var response = conversations.GetHistory(conversationId);
+                var grain = grains.GetGrain<IConversationGrain>(conversationId);
+                var response = await grain.GetHistoryAsync();
 
                 return response is null
                     ? Results.NotFound(new ApiError("conversation_not_found", $"Conversation '{conversationId}' was not found.", "conversationId"))

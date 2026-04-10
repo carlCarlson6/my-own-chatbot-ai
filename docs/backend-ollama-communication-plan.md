@@ -145,7 +145,7 @@ Another agent may have already completed part of the scaffold or changed the bac
 
 ---
 
-### Phase 3 — Move chat orchestration into Orleans ⏳ Pending
+### Phase 3 — Move chat orchestration into Orleans ✅ Done
 
 **Goal:** make Orleans the real conversation coordination boundary.
 
@@ -172,7 +172,7 @@ Another agent may have already completed part of the scaffold or changed the bac
 
 ---
 
-### Phase 4 — Security hardening ⏳ Pending
+### Phase 4 — Security hardening ✅ Done
 
 **Goal:** ensure only the backend is intended to communicate with Ollama.
 
