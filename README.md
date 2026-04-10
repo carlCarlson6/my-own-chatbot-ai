@@ -100,6 +100,12 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 - `infrastructure/` owns all Docker and Kubernetes configuration; no Dockerfiles live elsewhere.
 - Ollama is a backend-only integration boundary.
 
+## Completed Plans
+
+Plans that have been fully executed and are kept for historical reference.
+
+- [`docs/old-plans/copilot-workflow-improvement-plan.md`](docs/old-plans/copilot-workflow-improvement-plan.md) — Copilot workflow improvement plan: dev-setup instructions, testing guidelines, chatbot-builder agent, and prompt cleanup.
+
 ## Next Steps
 
 1. Replace the in-memory conversation stub with Orleans-backed orchestration.
