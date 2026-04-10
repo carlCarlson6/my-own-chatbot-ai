@@ -50,6 +50,7 @@ public static class ListModelsEndpoint
                 DisplayName: m,
                 IsDefault: string.Equals(m, defaultModel, StringComparison.OrdinalIgnoreCase),
                 Description: null))
+            .DistinctBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         // If intersection is empty (e.g. Ollama is down and nothing matches),
@@ -62,6 +63,7 @@ public static class ListModelsEndpoint
                     DisplayName: m,
                     IsDefault: string.Equals(m, defaultModel, StringComparison.OrdinalIgnoreCase),
                     Description: null))
+                .DistinctBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }
 

@@ -63,8 +63,10 @@ public sealed class OllamaHttpClient : IOllamaClient
             "Sending chat request to Ollama: model='{Model}', messages={MessageCount}",
             model, messages.Count);
 
+        var normalizedModel = NormalizeModelName(model);
+
         var requestBody = new OllamaChatRequest(
-            model,
+            normalizedModel,
             messages.Select(m => new OllamaChatMessage(m.Role, m.Content)).ToList(),
             Stream: false);
 
@@ -97,6 +99,9 @@ public sealed class OllamaHttpClient : IOllamaClient
 
         return chatResponse.Message.Content;
     }
+
+    private static string NormalizeModelName(string model) =>
+        model.Contains(':') ? model : $"{model}:latest";
 
     // Internal JSON shape records — not exposed outside this file
 
