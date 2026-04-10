@@ -44,4 +44,11 @@ Keep frontend and backend concerns clearly separated, and document integration b
 - Default to **local-first** AI integrations with Ollama unless a hosted provider is explicitly requested.
 - Link to existing docs such as `README.md` instead of duplicating them here.
 - Update this file as the repo grows with verified commands, structure, and examples.
+- **After completing any task**, stage all changed files, commit with a descriptive message, and push the branch to the remote:
+  - Follow the imperative-mood commit style already used in this repo (e.g. `Add X`, `Fix Y`, `Update Z`).
+  - Always include the co-author trailer in the commit message:
+    ```
+    Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+    ```
+  - Push with `git push` (or `git push -u origin <branch>` for a new branch) so the remote stays up to date.
 
