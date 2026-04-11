@@ -80,6 +80,10 @@ Establish Clerk as the capability that unlocks saved multi-conversation features
 
 Add a user-scoped conversation store for authenticated users while leaving the anonymous single-chat path lightweight and non-persistent.
 
+### Execution decision
+
+Use a lightweight **SQLite-backed durable store** for authenticated conversation summaries and message history. This keeps the project local-first, avoids introducing a separate database service before it is needed, and gives later phases a concrete persistence target for backend and infrastructure work.
+
 ### Planned work
 
 - `salva`
