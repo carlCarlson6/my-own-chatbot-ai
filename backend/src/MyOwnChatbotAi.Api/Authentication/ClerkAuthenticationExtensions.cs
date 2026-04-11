@@ -120,6 +120,22 @@ public static class ClerkAuthenticationExtensions
         });
     }
 
+    public static WebApplication RegisterClerkAuthenticationResourceCleanup(this WebApplication app)
+    {
+        var jwtBearerOptions = app.Services
+            .GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(JwtBearerDefaults.AuthenticationScheme);
+
+        if (jwtBearerOptions.ConfigurationManager is IDisposable disposableConfigurationManager)
+        {
+            app.Lifetime.ApplicationStopped.Register(static state =>
+                ((IDisposable)state!).Dispose(),
+                disposableConfigurationManager);
+        }
+
+        return app;
+    }
+
     private static string SelectScheme(HttpRequest request, ClerkAuthenticationOptions clerkOptions) =>
         clerkOptions.IsConfigured && HasBearerToken(request)
             ? JwtBearerDefaults.AuthenticationScheme

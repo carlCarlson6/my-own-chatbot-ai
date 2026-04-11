@@ -7,7 +7,7 @@ namespace MyOwnChatbotAi.Api.Authentication;
 public sealed class ClerkJwksConfigurationManager(
     string jwksUrl,
     string? issuer,
-    bool requireHttpsMetadata) : IConfigurationManager<OpenIdConnectConfiguration>
+    bool requireHttpsMetadata) : IConfigurationManager<OpenIdConnectConfiguration>, IDisposable
 {
     private static readonly TimeSpan AutomaticRefreshInterval = TimeSpan.FromHours(12);
     private static readonly TimeSpan MinimumRefreshInterval = TimeSpan.FromMinutes(5);
@@ -18,9 +18,12 @@ public sealed class ClerkJwksConfigurationManager(
     private DateTimeOffset lastRefreshUtc = DateTimeOffset.MinValue;
     private DateTimeOffset lastRefreshRequestUtc = DateTimeOffset.MinValue;
     private bool refreshRequested;
+    private bool disposed;
 
     public async Task<OpenIdConnectConfiguration> GetConfigurationAsync(CancellationToken cancel)
     {
+        ObjectDisposedException.ThrowIf(disposed, this);
+
         if (TryGetCachedConfiguration(out var cachedConfiguration))
         {
             return cachedConfiguration;
@@ -49,6 +52,8 @@ public sealed class ClerkJwksConfigurationManager(
 
     public void RequestRefresh()
     {
+        ObjectDisposedException.ThrowIf(disposed, this);
+
         var now = DateTimeOffset.UtcNow;
 
         if (now - lastRefreshRequestUtc < MinimumRefreshInterval)
@@ -60,8 +65,22 @@ public sealed class ClerkJwksConfigurationManager(
         lastRefreshRequestUtc = now;
     }
 
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        refreshLock.Dispose();
+        httpClient.Dispose();
+    }
+
     private async Task<OpenIdConnectConfiguration> LoadConfigurationAsync(CancellationToken cancellationToken)
     {
+        ObjectDisposedException.ThrowIf(disposed, this);
+
         using var response = await httpClient.GetAsync(jwksUrl, cancellationToken);
         response.EnsureSuccessStatusCode();
 

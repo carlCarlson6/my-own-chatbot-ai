@@ -26,6 +26,8 @@ builder.Host.UseOrleans(silo =>
 
 var app = builder.Build();
 
+app.RegisterClerkAuthenticationResourceCleanup();
+
 app.UseAuthentication();
 app.UseClerkBearerValidation();
 app.UseAuthorization();
