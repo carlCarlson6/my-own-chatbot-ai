@@ -142,9 +142,10 @@ Keep the AI runtime and deployment setup aligned with the authenticated multi-co
 
 ### Planned work
 
-- `ivan`
-  - Review whether per-user conversation loading changes any prompt-assembly, model-selection, or context-window assumptions.
-  - Recommend AI-focused guardrails only if history growth introduces quality or performance risk.
+- `ivan` ✅ Done
+  - Final review confirmed that per-user conversation loading does **not** change the current AI prompt assembly flow: authenticated history is still rehydrated in order into `ConversationGrain` and forwarded to Ollama as the full `OllamaMessage[]` conversation transcript.
+  - Model-selection assumptions also remain unchanged: each conversation still keeps the model captured at initialization, and reopening/switching conversations restores that persisted model instead of introducing any cross-conversation model mixing.
+  - Follow-up guardrail (non-blocking): managed histories are still replayed in full on every send/history load, so very long saved conversations will continue to increase SQLite read cost, Ollama prompt size, latency, timeout risk, and context-window pressure linearly until an explicit truncation/summarization budget is introduced in a later AI/runtime pass.
 - `vicente`
   - Add Clerk-related variables to Compose/Kubernetes docs and manifests as needed.
   - Keep secrets out of the repo and document variable names only.
