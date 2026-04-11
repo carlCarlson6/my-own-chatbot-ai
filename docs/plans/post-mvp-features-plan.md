@@ -76,10 +76,10 @@ Add real-time assistant token streaming while preserving the existing non-stream
 
 ### Repo reality notes
 
-- The contract currently has no `/api/conversations/stream` route.
-- `IOllamaClient` and `OllamaHttpClient` only expose non-streaming chat.
-- `ConversationGrain.SendMessageAsync(...)` persists only after a complete assistant response is available.
-- The frontend store only tracks `idle` / `sending` / `error` and does not render partial assistant output.
+- The contract now defines `POST /api/conversations/stream` with `started`, `chunk`, `completed`, and `error` SSE events.
+- The backend streaming endpoint is implemented and emits contract-aligned payloads, including a stable `assistantMessageId` reserved at stream start.
+- The frontend store still only tracks `idle` / `sending` / `error` and does not render partial assistant output.
+- The existing request/response `POST /api/conversations/send` flow remains available and should stay as a fallback during frontend rollout.
 
 ### Planned work
 
@@ -94,11 +94,12 @@ Add real-time assistant token streaming while preserving the existing non-stream
   - Add the backend streaming endpoint under `Features/Conversations/` and wire it through `MapConversationEndpoints()`.
   - Coordinate streaming completion with `ConversationGrain` so the user message and final assembled assistant message are persisted only when the stream completes successfully.
   - Ensure aborted or failed streams do not leave behind partial assistant messages or orphaned managed conversations.
-- `aitor` ⏳ Pending
+- `aitor` ✅ Done
   - Add a typed frontend streaming API helper for `POST /api/conversations/stream`.
   - Extend the Zustand store with a `streaming` send state, optimistic assistant placeholder handling, and final-message reconciliation when the completion event arrives.
   - Update `MessageComposer`, `MessageList`, and `MessageBubble` so partial assistant output is visible while streaming.
   - Keep the current non-streaming send path available as a fallback until the streamed flow is stable.
+  - Notes: frontend now parses `started` / `chunk` / `completed` / `error` SSE payloads with Zod, reconciles the reserved `assistantMessageId`, and retains the existing non-streaming send helper behind the store transport toggle.
 - `ivan` ⏳ Pending
   - Review the Ollama/runtime implications of chunk streaming, including cancellation, timeout behavior, and final content assembly expectations.
   - Confirm whether any model/runtime guidance or follow-up constraints should be captured in this plan after backend/frontend implementation lands.

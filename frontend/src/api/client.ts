@@ -36,7 +36,7 @@ async function handleResponse(response: Response): Promise<unknown> {
   return body
 }
 
-async function createHeaders(): Promise<Headers> {
+export async function createHeaders(): Promise<Headers> {
   const headers = new Headers({
     'Content-Type': 'application/json',
   })

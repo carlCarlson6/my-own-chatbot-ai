@@ -19,11 +19,26 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         }`}
       >
         <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-          {message.content}
+          {message.content || (message.isStreaming ? 'Thinking…' : '')}
+          {message.isStreaming ? (
+            <span
+              className="ml-1 inline-block h-4 w-2 animate-pulse rounded-sm bg-current align-middle opacity-70"
+              aria-hidden="true"
+            />
+          ) : null}
         </p>
-        <p className={`text-xs mt-1.5 ${isUser ? 'text-blue-200' : 'text-gray-400'}`}>
-          {time}
-        </p>
+        <div
+          className={`mt-1.5 flex items-center gap-2 text-xs ${
+            isUser ? 'text-blue-200' : 'text-gray-400'
+          }`}
+        >
+          <span>{time}</span>
+          {message.isStreaming ? (
+            <span className="rounded-full bg-gray-700 px-2 py-0.5 text-[11px] uppercase tracking-wide text-gray-300">
+              Streaming
+            </span>
+          ) : null}
+        </div>
       </div>
     </div>
   )

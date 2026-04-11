@@ -70,6 +70,59 @@ export const sendMessageResponseSchema = z.object({
   latencyMs: z.number().int().optional(),
 })
 
+export const conversationStreamStartedEventSchema = z
+  .object({
+    type: z.literal('started'),
+    conversationId: z.string(),
+    userMessage: chatMessageSchema,
+    conversation: conversationSummarySchema,
+    model: z.string(),
+    assistantMessageId: z.string(),
+  })
+  .strict()
+
+export const conversationStreamChunkEventSchema = z
+  .object({
+    type: z.literal('chunk'),
+    conversationId: z.string(),
+    assistantMessageId: z.string(),
+    delta: z.string(),
+    sequence: z.number().int().nonnegative(),
+  })
+  .strict()
+
+export const conversationStreamCompletedEventSchema = z
+  .object({
+    type: z.literal('completed'),
+    conversationId: z.string(),
+    userMessage: chatMessageSchema,
+    assistantMessage: chatMessageSchema,
+    conversation: conversationSummarySchema,
+    model: z.string(),
+    status: z.enum(['completed', 'failed']),
+    latencyMs: z.number().int().optional(),
+  })
+  .strict()
+
+export const conversationStreamErrorEventSchema = z
+  .object({
+    type: z.literal('error'),
+    conversationId: z.string(),
+    assistantMessageId: z.string(),
+    code: z.string(),
+    message: z.string(),
+    target: z.string().optional(),
+    details: z.array(z.string()).optional(),
+  })
+  .strict()
+
+export const conversationStreamEventSchema = z.discriminatedUnion('type', [
+  conversationStreamStartedEventSchema,
+  conversationStreamChunkEventSchema,
+  conversationStreamCompletedEventSchema,
+  conversationStreamErrorEventSchema,
+])
+
 export const getConversationHistoryResponseSchema = z.object({
   conversationId: z.string(),
   title: z.string(),
@@ -99,6 +152,11 @@ export type CreateConversationResponse = z.infer<typeof createConversationRespon
 export type ChatMessageInput = z.infer<typeof chatMessageInputSchema>
 export type SendMessageRequest = z.infer<typeof sendMessageRequestSchema>
 export type SendMessageResponse = z.infer<typeof sendMessageResponseSchema>
+export type ConversationStreamStartedEvent = z.infer<typeof conversationStreamStartedEventSchema>
+export type ConversationStreamChunkEvent = z.infer<typeof conversationStreamChunkEventSchema>
+export type ConversationStreamCompletedEvent = z.infer<typeof conversationStreamCompletedEventSchema>
+export type ConversationStreamErrorEvent = z.infer<typeof conversationStreamErrorEventSchema>
+export type ConversationStreamEvent = z.infer<typeof conversationStreamEventSchema>
 export type GetConversationHistoryResponse = z.infer<typeof getConversationHistoryResponseSchema>
 export type ListConversationsResponse = z.infer<typeof listConversationsResponseSchema>
 export type RenameConversationRequest = z.infer<typeof renameConversationRequestSchema>

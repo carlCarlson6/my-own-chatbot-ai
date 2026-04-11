@@ -7,6 +7,7 @@ export interface ChatMessage {
   role: MessageRole
   content: string
   createdAtUtc: string
+  isStreaming?: boolean
 }
 
 export interface ConversationSummary {

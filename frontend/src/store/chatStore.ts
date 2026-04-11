@@ -5,14 +5,22 @@ import {
   listConversations,
   renameConversation as apiRenameConversation,
   sendMessage as apiSendMessage,
+  streamMessage as apiStreamMessage,
 } from '../api/conversations'
 import { ChatApiError } from '../api/client'
 import type { ChatMessage, ConversationSummary } from '../types/chat'
+import type {
+  ConversationStreamChunkEvent,
+  ConversationStreamCompletedEvent,
+  ConversationStreamStartedEvent,
+} from '../api/schemas'
 
 type ChatMode = 'anonymous' | 'authenticated'
-type SendStatus = 'idle' | 'sending' | 'error'
+type SendStatus = 'idle' | 'sending' | 'streaming' | 'error'
 type SidebarStatus = 'idle' | 'loading' | 'error'
 type HistoryStatus = 'idle' | 'loading' | 'error'
+
+const STREAMING_SEND_ENABLED = true
 
 interface ChatState {
   chatMode: ChatMode
@@ -71,17 +79,79 @@ function reconcileMessages(
   }
 
   const userMessageIndex = nextMessages.findIndex((message) => message.messageId === userMessage.messageId)
-  const hasAssistantMessage = nextMessages.some(
+  const assistantMessageIndex = nextMessages.findIndex(
     (message) => message.messageId === assistantMessage.messageId,
   )
 
-  if (!hasAssistantMessage) {
+  if (assistantMessageIndex >= 0) {
+    nextMessages.splice(assistantMessageIndex, 1, assistantMessage)
+  } else {
     const assistantInsertIndex =
       userMessageIndex >= 0 ? userMessageIndex + 1 : nextMessages.length
     nextMessages.splice(assistantInsertIndex, 0, assistantMessage)
   }
 
   return nextMessages
+}
+
+function reconcileStreamingStart(
+  messages: ChatMessage[],
+  optimisticMessageId: string,
+  userMessage: ChatMessage,
+  assistantMessageId: string,
+): ChatMessage[] {
+  return reconcileMessages(
+    messages,
+    optimisticMessageId,
+    userMessage,
+    {
+      messageId: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      createdAtUtc: new Date().toISOString(),
+      isStreaming: true,
+    },
+  )
+}
+
+function appendStreamingAssistantDelta(
+  messages: ChatMessage[],
+  event: ConversationStreamChunkEvent,
+): ChatMessage[] {
+  const nextMessages = [...messages]
+  const assistantIndex = nextMessages.findIndex(
+    (message) => message.messageId === event.assistantMessageId,
+  )
+
+  if (assistantIndex >= 0) {
+    const assistantMessage = nextMessages[assistantIndex]
+
+    nextMessages.splice(assistantIndex, 1, {
+      ...assistantMessage,
+      content: assistantMessage.content + event.delta,
+      isStreaming: true,
+    })
+
+    return nextMessages
+  }
+
+  nextMessages.push({
+    messageId: event.assistantMessageId,
+    role: 'assistant',
+    content: event.delta,
+    createdAtUtc: new Date().toISOString(),
+    isStreaming: true,
+  })
+
+  return nextMessages
+}
+
+function removeMessage(messages: ChatMessage[], messageId: string | null): ChatMessage[] {
+  if (!messageId) {
+    return messages
+  }
+
+  return messages.filter((message) => message.messageId !== messageId)
 }
 
 function normalizeApiError(error: unknown, fallback: string) {
@@ -145,6 +215,10 @@ function getActiveViewEpoch() {
   return activeViewEpoch
 }
 
+function shouldUpsertConversation(chatMode: ChatMode) {
+  return chatMode === 'authenticated'
+}
+
 export const useChatStore = create<ChatState>()((set, get) => ({
   ...createBaseState('anonymous'),
 
@@ -192,7 +266,14 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
   activateConversation: async (conversationId) => {
     const { activeConversationId, sendStatus } = get()
-    if (sendStatus === 'sending' || activeConversationId === conversationId) {
+    if (
+      (sendStatus === 'sending' || sendStatus === 'streaming') &&
+      activeConversationId === conversationId
+    ) {
+      return
+    }
+
+    if (sendStatus === 'sending' || sendStatus === 'streaming') {
       return
     }
 
@@ -328,13 +409,14 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
   sendMessage: async (content) => {
     const { activeConversationId, sendStatus, chatMode } = get()
-    if (sendStatus === 'sending') {
+    if (sendStatus === 'sending' || sendStatus === 'streaming') {
       return
     }
 
     const optimisticMessageId = createClientMessageId()
     const optimisticUserMessage = createOptimisticUserMessage(content, optimisticMessageId)
     const requestViewEpoch = getActiveViewEpoch()
+    let activeAssistantMessageId: string | null = null
 
     set((state) => ({
       messages: [...state.messages, optimisticUserMessage],
@@ -345,43 +427,122 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     }))
 
     try {
-      const result = await apiSendMessage({
+      const request = {
         conversationId: activeConversationId ?? undefined,
         message: {
           content,
           clientMessageId: optimisticMessageId,
         },
-      })
-
-      if (requestViewEpoch !== getActiveViewEpoch()) {
-        return
       }
 
-      set((state) => ({
-        activeConversationId: result.conversationId,
-        activeConversation: result.conversation,
-        messages: reconcileMessages(
-          state.messages,
-          optimisticMessageId,
-          result.userMessage as ChatMessage,
-          result.assistantMessage as ChatMessage,
-        ),
-        sendStatus: 'idle',
-        errorMessage: null,
-        conversations:
-          chatMode === 'authenticated'
+      if (STREAMING_SEND_ENABLED) {
+        await apiStreamMessage(request, {
+          onStarted: (event: ConversationStreamStartedEvent) => {
+            if (requestViewEpoch !== getActiveViewEpoch()) {
+              return
+            }
+
+            activeAssistantMessageId = event.assistantMessageId
+
+            set((state) => ({
+              activeConversationId: event.conversationId,
+              activeConversation: event.conversation,
+              messages: reconcileStreamingStart(
+                state.messages,
+                optimisticMessageId,
+                event.userMessage as ChatMessage,
+                event.assistantMessageId,
+              ),
+              sendStatus: 'streaming',
+              errorMessage: null,
+              conversations: shouldUpsertConversation(chatMode)
+                ? upsertConversation(state.conversations, event.conversation)
+                : state.conversations,
+            }))
+          },
+          onChunk: (event: ConversationStreamChunkEvent) => {
+            if (requestViewEpoch !== getActiveViewEpoch()) {
+              return
+            }
+
+            activeAssistantMessageId = event.assistantMessageId
+
+            set((state) => ({
+              messages: appendStreamingAssistantDelta(state.messages, event),
+              sendStatus: 'streaming',
+              errorMessage: null,
+            }))
+          },
+          onCompleted: (event: ConversationStreamCompletedEvent) => {
+            if (requestViewEpoch !== getActiveViewEpoch()) {
+              return
+            }
+
+            activeAssistantMessageId = event.assistantMessage.messageId
+
+            set((state) => ({
+              activeConversationId: event.conversationId,
+              activeConversation: event.conversation,
+              messages: reconcileMessages(
+                state.messages,
+                optimisticMessageId,
+                event.userMessage as ChatMessage,
+                event.assistantMessage as ChatMessage,
+              ),
+              sendStatus: 'idle',
+              errorMessage: null,
+              conversations: shouldUpsertConversation(chatMode)
+                ? upsertConversation(state.conversations, event.conversation)
+                : state.conversations,
+            }))
+          },
+          onError: (event) => {
+            if (requestViewEpoch !== getActiveViewEpoch()) {
+              return
+            }
+
+            activeAssistantMessageId = event.assistantMessageId
+
+            set((state) => ({
+              messages: removeMessage(state.messages, event.assistantMessageId),
+              sendStatus: 'error',
+              errorMessage: event.message,
+            }))
+          },
+        })
+      } else {
+        const result = await apiSendMessage(request)
+
+        if (requestViewEpoch !== getActiveViewEpoch()) {
+          return
+        }
+
+        set((state) => ({
+          activeConversationId: result.conversationId,
+          activeConversation: result.conversation,
+          messages: reconcileMessages(
+            state.messages,
+            optimisticMessageId,
+            result.userMessage as ChatMessage,
+            result.assistantMessage as ChatMessage,
+          ),
+          sendStatus: 'idle',
+          errorMessage: null,
+          conversations: shouldUpsertConversation(chatMode)
             ? upsertConversation(state.conversations, result.conversation)
             : state.conversations,
-      }))
+        }))
+      }
     } catch (error) {
       if (requestViewEpoch !== getActiveViewEpoch()) {
         return
       }
 
-      set({
+      set((state) => ({
+        messages: removeMessage(state.messages, activeAssistantMessageId),
         sendStatus: 'error',
         errorMessage: normalizeApiError(error, 'Failed to send message'),
-      })
+      }))
     }
   },
 

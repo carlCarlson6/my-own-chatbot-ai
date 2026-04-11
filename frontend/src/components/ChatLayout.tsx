@@ -67,7 +67,7 @@ export function ChatLayout({ multiConversationEnabled }: ChatLayoutProps) {
     }
   }, [initializeChat, loadConversations, multiConversationEnabled])
 
-  const isSending = sendStatus === 'sending'
+  const isBusySending = sendStatus === 'sending' || sendStatus === 'streaming'
   const isLoadingHistory = historyStatus === 'loading'
 
   const emptyState = useMemo(() => {
@@ -108,7 +108,7 @@ export function ChatLayout({ multiConversationEnabled }: ChatLayoutProps) {
 
       <MessageList
         messages={messages}
-        isSending={isSending}
+        sendStatus={sendStatus}
         isLoadingHistory={isLoadingHistory}
         emptyStateTitle={emptyState.title}
         emptyStateDescription={emptyState.description}
@@ -122,7 +122,10 @@ export function ChatLayout({ multiConversationEnabled }: ChatLayoutProps) {
         <ErrorBanner message={errorMessage} onDismiss={clearError} />
       ) : null}
 
-      <MessageComposer onSend={sendMessage} isSending={isSending || isLoadingHistory} />
+      <MessageComposer
+        onSend={sendMessage}
+        sendStatus={isLoadingHistory ? 'sending' : isBusySending ? sendStatus : 'idle'}
+      />
     </div>
   )
 
