@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -100,6 +101,100 @@ public sealed class OllamaHttpClient : IOllamaClient
         return chatResponse.Message.Content;
     }
 
+    public async IAsyncEnumerable<string> StreamChatAsync(
+        string model,
+        IReadOnlyList<OllamaMessage> messages,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        _logger.LogDebug(
+            "Sending streaming chat request to Ollama: model='{Model}', messages={MessageCount}",
+            model, messages.Count);
+
+        var normalizedModel = NormalizeModelName(model);
+        var requestBody = new OllamaChatRequest(
+            normalizedModel,
+            messages.Select(m => new OllamaChatMessage(m.Role, m.Content)).ToList(),
+            Stream: true);
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/chat")
+        {
+            Content = JsonContent.Create(requestBody, options: JsonOptions)
+        };
+
+        HttpResponseMessage response;
+        try
+        {
+            response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Failed to connect to Ollama for streaming chat with model '{Model}'", model);
+            throw new OllamaException($"Failed to connect to Ollama for streaming chat with model '{model}'.", ex);
+        }
+
+        using var streamingResponse = response;
+
+        if (!streamingResponse.IsSuccessStatusCode)
+        {
+            _logger.LogWarning(
+                "Ollama returned {StatusCode} for streaming chat with model '{Model}'",
+                (int)streamingResponse.StatusCode, model);
+            throw new OllamaException(
+                $"Ollama returned {(int)streamingResponse.StatusCode} for streaming chat with model '{model}'.");
+        }
+
+        await using var responseStream = await streamingResponse.Content.ReadAsStreamAsync(ct);
+        using var reader = new StreamReader(responseStream);
+
+        var sawCompletionChunk = false;
+
+        while (true)
+        {
+            var line = await reader.ReadLineAsync(ct);
+            if (line is null)
+            {
+                break;
+            }
+
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            OllamaChatStreamResponse chunk;
+            try
+            {
+                chunk = JsonSerializer.Deserialize<OllamaChatStreamResponse>(line, JsonOptions)
+                    ?? throw new OllamaException("Ollama returned an empty streaming chunk for /api/chat.");
+            }
+            catch (JsonException ex)
+            {
+                throw new OllamaException("Ollama returned an invalid streaming chunk for /api/chat.", ex);
+            }
+
+            if (!string.IsNullOrWhiteSpace(chunk.Error))
+            {
+                throw new OllamaException(chunk.Error);
+            }
+
+            if (!string.IsNullOrEmpty(chunk.Message?.Content))
+            {
+                yield return chunk.Message.Content;
+            }
+
+            if (chunk.Done)
+            {
+                sawCompletionChunk = true;
+                break;
+            }
+        }
+
+        if (!sawCompletionChunk)
+        {
+            throw new OllamaException("Ollama closed the response stream before completion.");
+        }
+    }
+
     private static string NormalizeModelName(string model) =>
         model.Contains(':') ? model : $"{model}:latest";
 
@@ -116,4 +211,5 @@ public sealed class OllamaHttpClient : IOllamaClient
     private sealed record OllamaChatMessage(string Role, string Content);
 
     private sealed record OllamaChatResponse(OllamaChatMessage Message, bool Done);
+    private sealed record OllamaChatStreamResponse(OllamaChatMessage? Message, bool Done, string? Error);
 }

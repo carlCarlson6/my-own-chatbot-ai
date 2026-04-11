@@ -11,6 +11,7 @@ public static class ConversationEndpointExtensions
         group.MapRenameConversationEndpoint();
         group.MapDeleteConversationEndpoint();
         group.MapSendMessageEndpoint();
+        group.MapStreamMessageEndpoint();
         group.MapGetConversationHistoryEndpoint();
 
         return app;

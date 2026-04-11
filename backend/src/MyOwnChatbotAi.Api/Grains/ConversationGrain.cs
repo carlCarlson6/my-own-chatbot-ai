@@ -21,11 +21,14 @@ public sealed class ConversationState
 
 public sealed class ConversationGrain : Grain, IConversationGrain
 {
+    private sealed record PendingStreamMessage(string? OwnerUserId, Guid AssistantMessageId);
+
     private readonly IPersistentState<ConversationState> _state;
     private readonly IUserOwnedConversationStore _conversationStore;
     private readonly IOllamaClient _ollamaClient;
     private readonly OllamaOptions _options;
     private readonly ILogger<ConversationGrain> _logger;
+    private PendingStreamMessage? _pendingStreamMessage;
 
     public ConversationGrain(
         [PersistentState("state", "conversations")] IPersistentState<ConversationState> state,
@@ -102,6 +105,8 @@ public sealed class ConversationGrain : Grain, IConversationGrain
 
     public async Task<SendMessageResponse?> SendMessageAsync(string? ownerUserId, ChatMessageInput message, bool createIfMissing)
     {
+        EnsureNoPendingStream();
+
         var conversationId = this.GetPrimaryKey();
 
         if (!await EnsureConversationLoadedAsync(ownerUserId))
@@ -194,6 +199,167 @@ public sealed class ConversationGrain : Grain, IConversationGrain
             model,
             "completed",
             latencyMs);
+    }
+
+    public async Task<StreamMessageStartResponse?> BeginStreamMessageAsync(
+        string? ownerUserId,
+        ChatMessageInput message,
+        bool createIfMissing)
+    {
+        EnsureNoPendingStream();
+
+        var conversationId = this.GetPrimaryKey();
+
+        if (!await EnsureConversationLoadedAsync(ownerUserId))
+        {
+            if (!createIfMissing)
+            {
+                _logger.LogDebug(
+                    "BeginStreamMessage rejected for unavailable conversation {ConversationId} and user '{OwnerUserId}'",
+                    conversationId,
+                    ownerUserId ?? "anonymous");
+                return null;
+            }
+
+            _logger.LogDebug(
+                "Conversation {ConversationId} not yet initialized, auto-initializing before streaming send",
+                conversationId);
+            await InitializeAsync(ownerUserId, string.Empty);
+        }
+
+        var userMessage = new ChatMessage(Guid.NewGuid(), "user", message.Content.Trim(), DateTime.UtcNow);
+        var assistantMessageId = Guid.NewGuid();
+        var ollamaMessages = _state.State.Messages
+            .Select(m => new OllamaMessage(m.Role, m.Content))
+            .Append(new OllamaMessage(userMessage.Role, userMessage.Content))
+            .ToList();
+
+        _pendingStreamMessage = new PendingStreamMessage(ownerUserId, assistantMessageId);
+
+        _logger.LogDebug(
+            "Prepared streaming message for conversation {ConversationId} using model '{Model}' ({MessageCount} messages in history)",
+            conversationId,
+            _state.State.Model,
+            ollamaMessages.Count);
+
+        return new StreamMessageStartResponse(
+            conversationId,
+            userMessage,
+            CreateConversationSummary(conversationId),
+            _state.State.Model,
+            assistantMessageId,
+            ollamaMessages.AsReadOnly());
+    }
+
+    public async Task<SendMessageResponse?> CompleteStreamMessageAsync(
+        string? ownerUserId,
+        ChatMessage userMessage,
+        Guid assistantMessageId,
+        string assistantContent,
+        int latencyMs)
+    {
+        var conversationId = this.GetPrimaryKey();
+
+        if (!await EnsureConversationLoadedAsync(ownerUserId))
+        {
+            _logger.LogDebug(
+                "CompleteStreamMessage rejected for unavailable conversation {ConversationId} and user '{OwnerUserId}'",
+                conversationId,
+                ownerUserId ?? "anonymous");
+            return null;
+        }
+
+        if (_pendingStreamMessage is not null
+            && (_pendingStreamMessage.AssistantMessageId != assistantMessageId
+                || !string.Equals(_pendingStreamMessage.OwnerUserId, ownerUserId, StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException("Streaming completion did not match the active conversation stream.");
+        }
+
+        var previousTitle = _state.State.Title;
+        var previousUpdatedAtUtc = _state.State.UpdatedAtUtc;
+        var previousMessageCount = _state.State.Messages.Count;
+
+        try
+        {
+            _state.State.Messages.Add(userMessage);
+            ApplyDefaultTitleFromFirstUserMessage(userMessage);
+
+            var assistantMessage = new ChatMessage(assistantMessageId, "assistant", assistantContent, DateTime.UtcNow);
+            _state.State.Messages.Add(assistantMessage);
+            _state.State.UpdatedAtUtc = assistantMessage.CreatedAtUtc;
+
+            if (_state.State.IsManagedConversation && !string.IsNullOrWhiteSpace(_state.State.OwnerUserId))
+            {
+                await _conversationStore.AppendMessagesAsync(
+                    conversationId,
+                    _state.State.OwnerUserId!,
+                    _state.State.Title,
+                    _state.State.HasManualTitle,
+                    _state.State.UpdatedAtUtc,
+                    [
+                        ToStoredMessage(userMessage),
+                        ToStoredMessage(assistantMessage)
+                    ]);
+            }
+
+            await _state.WriteStateAsync();
+
+            _logger.LogInformation(
+                "Streaming response completed for conversation {ConversationId} with model '{Model}' in {LatencyMs}ms",
+                conversationId,
+                _state.State.Model,
+                latencyMs);
+
+            return new SendMessageResponse(
+                conversationId,
+                userMessage,
+                assistantMessage,
+                CreateConversationSummary(conversationId),
+                _state.State.Model,
+                "completed",
+                latencyMs);
+        }
+        catch
+        {
+            _state.State.Messages.RemoveRange(previousMessageCount, _state.State.Messages.Count - previousMessageCount);
+            _state.State.Title = previousTitle;
+            _state.State.UpdatedAtUtc = previousUpdatedAtUtc;
+
+            if (previousMessageCount == 0)
+            {
+                await RollbackFailedEmptyManagedConversationAsync(conversationId);
+            }
+
+            throw;
+        }
+        finally
+        {
+            ClearPendingStreamMessage(assistantMessageId);
+        }
+    }
+
+    public async Task AbortStreamMessageAsync(string? ownerUserId, Guid assistantMessageId)
+    {
+        var conversationId = this.GetPrimaryKey();
+
+        if (!await EnsureConversationLoadedAsync(ownerUserId))
+        {
+            ClearPendingStreamMessage(assistantMessageId);
+            return;
+        }
+
+        _logger.LogDebug(
+            "Aborting streaming response for conversation {ConversationId} and assistant message {AssistantMessageId}",
+            conversationId,
+            assistantMessageId);
+
+        ClearPendingStreamMessage(assistantMessageId);
+
+        if (_state.State.Messages.Count == 0)
+        {
+            await RollbackFailedEmptyManagedConversationAsync(conversationId);
+        }
     }
 
     public async Task<ConversationHistoryOperationResult> GetHistoryAsync(string? ownerUserId)
@@ -409,6 +575,22 @@ public sealed class ConversationGrain : Grain, IConversationGrain
         }
 
         _state.State.Title = ConversationTitleGenerator.CreateDefaultTitleFromFirstMessage(userMessage.Content);
+    }
+
+    private void EnsureNoPendingStream()
+    {
+        if (_pendingStreamMessage is not null)
+        {
+            throw new InvalidOperationException("Conversation is already processing a streamed reply.");
+        }
+    }
+
+    private void ClearPendingStreamMessage(Guid assistantMessageId)
+    {
+        if (_pendingStreamMessage?.AssistantMessageId == assistantMessageId)
+        {
+            _pendingStreamMessage = null;
+        }
     }
 
     private async Task RollbackFailedEmptyManagedConversationAsync(Guid conversationId)

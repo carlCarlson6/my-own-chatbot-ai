@@ -42,6 +42,44 @@ public sealed record SendMessageResponse(
     [property: Id(6)] int? LatencyMs);
 
 [GenerateSerializer]
+public sealed record ConversationStreamStartedEvent(
+    [property: Id(0)] string Type,
+    [property: Id(1)] Guid ConversationId,
+    [property: Id(2)] ChatMessage UserMessage,
+    [property: Id(3)] ConversationSummary Conversation,
+    [property: Id(4)] string Model,
+    [property: Id(5)] Guid AssistantMessageId);
+
+[GenerateSerializer]
+public sealed record ConversationStreamChunkEvent(
+    [property: Id(0)] string Type,
+    [property: Id(1)] Guid ConversationId,
+    [property: Id(2)] Guid AssistantMessageId,
+    [property: Id(3)] string Delta,
+    [property: Id(4)] int Sequence);
+
+[GenerateSerializer]
+public sealed record ConversationStreamCompletedEvent(
+    [property: Id(0)] string Type,
+    [property: Id(1)] Guid ConversationId,
+    [property: Id(2)] ChatMessage UserMessage,
+    [property: Id(3)] ChatMessage AssistantMessage,
+    [property: Id(4)] ConversationSummary Conversation,
+    [property: Id(5)] string Model,
+    [property: Id(6)] string Status,
+    [property: Id(7)] int? LatencyMs);
+
+[GenerateSerializer]
+public sealed record ConversationStreamErrorEvent(
+    [property: Id(0)] string Type,
+    [property: Id(1)] Guid ConversationId,
+    [property: Id(2)] Guid AssistantMessageId,
+    [property: Id(3)] string Code,
+    [property: Id(4)] string Message,
+    [property: Id(5)] string? Target = null,
+    [property: Id(6)] IReadOnlyList<string>? Details = null);
+
+[GenerateSerializer]
 public sealed record GetConversationHistoryResponse(
     [property: Id(0)] Guid ConversationId,
     [property: Id(1)] string Title,

@@ -88,7 +88,7 @@ Add real-time assistant token streaming while preserving the existing non-stream
   - Reuse the existing `SendMessageRequest` shape unless repo reality shows a required streaming-specific field.
   - Document the `text/event-stream` response and define the event payloads needed for typed frontend/backend alignment (for example started/chunk/completed/error events).
   - Keep the existing non-streaming send route documented as a supported fallback path.
-- `salva` ⏳ Pending
+- `salva` ✅ Done
   - Extend `IOllamaClient` with a streaming abstraction appropriate for Ollama's chunked `/api/chat` responses.
   - Implement the streaming client path in `OllamaHttpClient` using response-header streaming and newline-delimited chunk parsing.
   - Add the backend streaming endpoint under `Features/Conversations/` and wire it through `MapConversationEndpoints()`.
