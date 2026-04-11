@@ -8,6 +8,7 @@ My own chatbot web app.
 - The checked-in implementation is a **.NET 8 Minimal API** backend under `backend/src/MyOwnChatbotAi.Api`.
 - **Conversation endpoints** (`create`, `send`, `history`) are now orchestrated by **Microsoft Orleans** (`ConversationGrain`) which delegates message generation to `IOllamaClient`.
 - **Model listing** (`GET /api/models`) calls **Ollama** directly via the backend client layer, with an automatic fallback to the configured allowlist when Ollama is unavailable.
+- Optional **Clerk auth groundwork** is now wired across the app: the backend can validate Clerk bearer tokens when configured, the frontend can render a Clerk shell, and signed-in API calls attach the session token while anonymous chat remains available.
 - A frontend chat UI is implemented under `frontend/` — native `fetch` + Zod API client layer, Zustand store, and React components (MessageList, MessageBubble, MessageComposer, ModelSelector, ConversationHeader, ChatLayout) are all wired to the backend. The Vite dev server proxies `/api/*` to `localhost:5050`.
 - Infrastructure is fully configured under `infrastructure/` — Docker (standalone + Compose) and Kubernetes manifests for all three services.
 
@@ -19,6 +20,7 @@ My own chatbot web app.
 - **OpenAPI 3.0** contract-first API design
 - **Ollama client layer** — `IOllamaClient` / `OllamaHttpClient` / `OllamaOptions` registered in the backend; model listing calls Ollama with allowlist-based fallback
 - **Microsoft Orleans** — `ConversationGrain` owns conversation state and orchestrates Ollama-backed message generation
+- **Clerk auth foundation** — optional Clerk JWT validation in the backend plus ClerkProvider/token-aware API calls in the frontend
 - **Vite + React + TypeScript** frontend with Tailwind CSS, Zustand, and Zod — **fully wired to the backend API** with a native `fetch` client, Zod-validated responses, and a Zustand store driving the chat UI
 - **Docker / Docker Compose** for containerised local and production-like runs
 - **Kubernetes** manifests targeting the `chatbot-ai` namespace
@@ -26,7 +28,7 @@ My own chatbot web app.
 ### Planned next layers
 
 - Token streaming support (deferred from MVP).
-- Conversation history browser / sidebar (single conversation per session in MVP).
+- Clerk-backed multi-conversation persistence and sidebar UX.
 
 ## Repo Structure
 
@@ -40,7 +42,7 @@ my-own-chatbot-ai/
 └── .github/          Copilot agents, instructions, prompts, and skills
     ├── agents/       8 custom Copilot coding agents
     ├── instructions/ 8 convention instruction files
-    ├── prompts/      6 reusable prompt files
+    ├── prompts/      7 reusable prompt files
     └── skills/       5 on-demand skill files
 ```
 
@@ -96,6 +98,18 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 | Lint frontend | `cd frontend && npm run lint` | ESLint passes — zero errors |
 | Dev frontend | `cd frontend && npm run dev` | Vite dev server on `http://localhost:5173`; `/api` proxied to `http://localhost:5050` |
 | Validate Compose | `cd infrastructure && docker compose -f docker-compose.yml config` | Prints resolved config with no errors |
+
+## Optional Clerk Configuration
+
+Anonymous chat still works without Clerk. To enable the authenticated shell and backend token validation for phase 1, configure:
+
+| Surface | Variables |
+| --- | --- |
+| Frontend dev (Vite) | `VITE_CLERK_PUBLISHABLE_KEY` |
+| Frontend containers (Docker / Kubernetes) | `CLERK_PUBLISHABLE_KEY` |
+| Backend API | `Clerk__Authority`, optional `Clerk__Audience`, optional `Clerk__RequireHttpsMetadata` |
+
+See [`infrastructure/README.md`](infrastructure/README.md) for the Docker Compose and Kubernetes wiring.
 
 ## Architecture Boundaries
 
