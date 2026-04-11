@@ -78,6 +78,8 @@ If the next task block belongs to **you**, continue to Step 5.
 
 If ownership is ambiguous, stop and ask the user to clarify before making changes.
 
+If the task belongs to **you**, that means you may work only inside **your assigned domain** for that specific next task block. You are **not allowed** to implement work that belongs to another agent's domain, even if it feels closely related or blocking.
+
 ---
 
 ## Step 5 — Execute only the owned task block
@@ -87,10 +89,11 @@ When the next task block belongs to you:
 1. Read the code, docs, and configuration directly related to that task.
 2. Implement only:
    - the selected task block,
-   - any directly coupled wiring needed to make it work,
+   - changes that stay strictly inside your domain boundary,
    - any required plan-status updates documenting what was completed.
-3. Do **not** skip ahead to later task blocks from the same phase unless they are part of the same coherent owned task and no dependency is being bypassed.
-4. Preserve the plan's dependency order. If you discover the plan is stale or another agent's prerequisite is actually missing, stop and report that instead of improvising across domains.
+3. If completing the task would require changes in another domain, **stop and hand off** instead of making those changes yourself.
+4. Do **not** skip ahead to later task blocks from the same phase unless they are part of the same coherent owned task and still remain entirely within your domain.
+5. Preserve the plan's dependency order. If you discover the plan is stale or another agent's prerequisite is actually missing, stop and report that instead of improvising across domains.
 
 ---
 
@@ -149,6 +152,8 @@ If you completed work, provide:
 
 - **Do not skip the first pending phase.**
 - **Do not skip the first task block in that phase.**
+- **Work only on the next task block assigned to your agent.**
 - **Do not continue when another agent owns the next task.**
+- **Do not modify files or implement logic that belongs to another agent's domain.**
 - **Do not rewrite the plan structure unless the plan is stale and must be corrected first.**
 - **Do not invent agent ownership.** Use the plan text and the active agent identity.
