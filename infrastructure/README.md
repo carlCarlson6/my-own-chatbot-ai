@@ -24,7 +24,8 @@ _Last updated: 2026-04-11_
 9. [Networking](#networking)
 10. [Storage](#storage)
 11. [GPU Support (Ollama)](#gpu-support-ollama)
-12. [Adding a New Service](#adding-a-new-service)
+12. [Operational Validation & Rollback](#operational-validation--rollback)
+13. [Adding a New Service](#adding-a-new-service)
 
 ---
 
@@ -539,6 +540,60 @@ ollama:
 ### Kubernetes
 
 Uncomment the `nodeSelector`, `tolerations`, and `nvidia.com/gpu` resource limit sections in `kubernetes/ollama/deployment.yaml`. Requires the [NVIDIA GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/overview.html) to be installed in your cluster.
+
+---
+
+## Operational Validation & Rollback
+
+Use these checks whenever infrastructure behavior changes.
+
+### Docker and Compose
+
+```bash
+# Validate compose shape before deploying
+cd infrastructure
+docker compose -f docker-compose.yml config
+
+# Rebuild a single image from repo root
+docker build -f infrastructure/docker/backend/Dockerfile -t chatbot-ai/backend:test .
+docker build -f infrastructure/docker/frontend/Dockerfile -t chatbot-ai/frontend:test .
+docker build -f infrastructure/docker/ollama/Dockerfile -t chatbot-ai/ollama:test .
+```
+
+### Kubernetes validation
+
+```bash
+# Client-side validation
+kubectl apply --dry-run=client -f infrastructure/kubernetes/backend/
+kubectl apply --dry-run=client -f infrastructure/kubernetes/frontend/
+kubectl apply --dry-run=client -f infrastructure/kubernetes/ollama/
+
+# Prefer server-side validation too when the cluster is reachable
+kubectl apply --dry-run=server -f infrastructure/kubernetes/backend/
+kubectl apply --dry-run=server -f infrastructure/kubernetes/frontend/
+kubectl apply --dry-run=server -f infrastructure/kubernetes/ollama/
+```
+
+### Rollout and rollback
+
+```bash
+# Watch the active rollout
+kubectl -n chatbot-ai rollout status deployment/backend
+kubectl -n chatbot-ai rollout status deployment/frontend
+kubectl -n chatbot-ai rollout status deployment/ollama
+
+# Roll back the last deployment if needed
+kubectl -n chatbot-ai rollout undo deployment/backend
+kubectl -n chatbot-ai rollout undo deployment/frontend
+kubectl -n chatbot-ai rollout undo deployment/ollama
+```
+
+### Security defaults to preserve
+
+- Keep non-secret configuration in ConfigMaps and actual secrets out of git.
+- Prefer `runAsNonRoot: true`, `allowPrivilegeEscalation: false`, and `seccompProfile.type: RuntimeDefault` when the base image supports them.
+- Preserve resource requests/limits and health probes when changing Deployments.
+- Add a startup probe when a service has a slower boot path than its normal readiness/liveness window.
 
 ---
 

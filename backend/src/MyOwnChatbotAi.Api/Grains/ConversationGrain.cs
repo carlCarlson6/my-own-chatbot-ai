@@ -123,6 +123,7 @@ public sealed class ConversationGrain : Grain, IConversationGrain
 
         var previousTitle = _state.State.Title;
         var previousUpdatedAtUtc = _state.State.UpdatedAtUtc;
+        var hadMessagesBeforeSend = _state.State.Messages.Count > 0;
         var userMessage = new ChatMessage(Guid.NewGuid(), "user", message.Content.Trim(), DateTime.UtcNow);
         _state.State.Messages.Add(userMessage);
         ApplyDefaultTitleFromFirstUserMessage(userMessage);
@@ -136,27 +137,34 @@ public sealed class ConversationGrain : Grain, IConversationGrain
             conversationId, _state.State.Model, ollamaMessages.Count);
 
         var startedAt = DateTime.UtcNow;
+        var model = _state.State.Model;
         string assistantContent;
         try
         {
-            assistantContent = await _ollamaClient.ChatAsync(_state.State.Model, ollamaMessages);
+            assistantContent = await _ollamaClient.ChatAsync(model, ollamaMessages);
         }
         catch (OllamaException ex)
         {
             _state.State.Messages.Remove(userMessage);
             _state.State.Title = previousTitle;
             _state.State.UpdatedAtUtc = previousUpdatedAtUtc;
+
+            if (!hadMessagesBeforeSend)
+            {
+                await RollbackFailedEmptyManagedConversationAsync(conversationId);
+            }
+
             _logger.LogError(ex,
                 "Ollama failed to generate a reply for conversation {ConversationId} with model '{Model}'",
-                conversationId, _state.State.Model);
+                conversationId, model);
             throw new InvalidOperationException(
-                $"Ollama failed to generate a reply for model '{_state.State.Model}': {ex.Message}", ex);
+                $"Ollama failed to generate a reply for model '{model}': {ex.Message}", ex);
         }
 
         var latencyMs = (int)(DateTime.UtcNow - startedAt).TotalMilliseconds;
         _logger.LogInformation(
             "Ollama responded for conversation {ConversationId} with model '{Model}' in {LatencyMs}ms",
-            conversationId, _state.State.Model, latencyMs);
+            conversationId, model, latencyMs);
 
         var assistantMessage = new ChatMessage(Guid.NewGuid(), "assistant", assistantContent, DateTime.UtcNow);
         _state.State.Messages.Add(assistantMessage);
@@ -183,7 +191,7 @@ public sealed class ConversationGrain : Grain, IConversationGrain
             userMessage,
             assistantMessage,
             CreateConversationSummary(conversationId),
-            _state.State.Model,
+            model,
             "completed",
             latencyMs);
     }
@@ -401,6 +409,19 @@ public sealed class ConversationGrain : Grain, IConversationGrain
         }
 
         _state.State.Title = ConversationTitleGenerator.CreateDefaultTitleFromFirstMessage(userMessage.Content);
+    }
+
+    private async Task RollbackFailedEmptyManagedConversationAsync(Guid conversationId)
+    {
+        if (!_state.State.IsManagedConversation || string.IsNullOrWhiteSpace(_state.State.OwnerUserId))
+        {
+            return;
+        }
+
+        await _conversationStore.DeleteConversationAsync(conversationId, _state.State.OwnerUserId!);
+        ResetState();
+        await _state.ClearStateAsync();
+        DeactivateOnIdle();
     }
 
     private void HydrateFromPersistedConversation(UserOwnedConversationHistory persistedConversation)

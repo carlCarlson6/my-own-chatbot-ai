@@ -134,6 +134,17 @@ function createBaseState(mode: ChatMode) {
   }
 }
 
+let activeViewEpoch = 0
+
+function advanceActiveViewEpoch() {
+  activeViewEpoch += 1
+  return activeViewEpoch
+}
+
+function getActiveViewEpoch() {
+  return activeViewEpoch
+}
+
 export const useChatStore = create<ChatState>()((set, get) => ({
   ...createBaseState('anonymous'),
 
@@ -143,6 +154,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       return
     }
 
+    advanceActiveViewEpoch()
     set(createBaseState(mode))
   },
 
@@ -186,6 +198,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
     const summary =
       get().conversations.find((conversation) => conversation.conversationId === conversationId) ?? null
+    const requestViewEpoch = advanceActiveViewEpoch()
 
     set({
       activeConversationId: conversationId,
@@ -201,6 +214,13 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       const history = await getConversationHistory(conversationId)
       const nextConversation = createConversationSummary(history)
 
+      if (
+        requestViewEpoch !== getActiveViewEpoch() ||
+        get().activeConversationId !== conversationId
+      ) {
+        return
+      }
+
       set((state) => ({
         activeConversationId: history.conversationId,
         activeConversation: nextConversation,
@@ -210,6 +230,13 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         conversations: upsertConversation(state.conversations, nextConversation),
       }))
     } catch (error) {
+      if (
+        requestViewEpoch !== getActiveViewEpoch() ||
+        get().activeConversationId !== conversationId
+      ) {
+        return
+      }
+
       set({
         historyStatus: 'error',
         historyErrorMessage: normalizeApiError(error, 'Failed to load conversation history'),
@@ -217,7 +244,9 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     }
   },
 
-  startNewConversation: () =>
+  startNewConversation: () => {
+    advanceActiveViewEpoch()
+
     set({
       activeConversationId: null,
       activeConversation: null,
@@ -228,7 +257,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       sidebarErrorMessage: null,
       historyStatus: 'idle',
       historyErrorMessage: null,
-    }),
+    })
+  },
 
   renameConversation: async (conversationId, title) => {
     set({
@@ -265,10 +295,13 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
     try {
       await apiDeleteConversation(conversationId)
+      const isActiveConversation = get().activeConversationId === conversationId
+
+      if (isActiveConversation) {
+        advanceActiveViewEpoch()
+      }
 
       set((state) => {
-        const isActiveConversation = state.activeConversationId === conversationId
-
         return {
           conversations: state.conversations.filter(
             (conversation) => conversation.conversationId !== conversationId,
@@ -294,13 +327,14 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   },
 
   sendMessage: async (content) => {
-    const { activeConversationId, messages, sendStatus, chatMode } = get()
+    const { activeConversationId, sendStatus, chatMode } = get()
     if (sendStatus === 'sending') {
       return
     }
 
     const optimisticMessageId = createClientMessageId()
     const optimisticUserMessage = createOptimisticUserMessage(content, optimisticMessageId)
+    const requestViewEpoch = getActiveViewEpoch()
 
     set((state) => ({
       messages: [...state.messages, optimisticUserMessage],
@@ -319,11 +353,15 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         },
       })
 
+      if (requestViewEpoch !== getActiveViewEpoch()) {
+        return
+      }
+
       set((state) => ({
         activeConversationId: result.conversationId,
         activeConversation: result.conversation,
         messages: reconcileMessages(
-          messages,
+          state.messages,
           optimisticMessageId,
           result.userMessage as ChatMessage,
           result.assistantMessage as ChatMessage,
@@ -336,6 +374,10 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             : state.conversations,
       }))
     } catch (error) {
+      if (requestViewEpoch !== getActiveViewEpoch()) {
+        return
+      }
+
       set({
         sendStatus: 'error',
         errorMessage: normalizeApiError(error, 'Failed to send message'),

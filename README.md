@@ -39,11 +39,12 @@ my-own-chatbot-ai/
 ├── docs/plans/            Architecture and workflow planning documents
 ├── frontend/         Vite + React + TypeScript SPA
 ├── infrastructure/   Docker, Docker Compose, and Kubernetes configuration
-└── .github/          Copilot agents, instructions, prompts, and skills
-    ├── agents/       8 custom Copilot coding agents
+└── .github/          Copilot agents, instructions, prompts, skills, and hooks
+    ├── agents/       7 custom Copilot coding agents
+    ├── hooks/        1 reusable Copilot safety hook
     ├── instructions/ 8 convention instruction files
     ├── prompts/      8 reusable prompt files
-    └── skills/       5 on-demand skill files
+    └── skills/       6 on-demand skill files
 ```
 
 ## Infrastructure
@@ -123,13 +124,13 @@ See [`infrastructure/README.md`](infrastructure/README.md) for the Docker Compos
 
 ### WIP / In-Progress
 
-- [`docs/plans/clerk-auth-multi-conversation-plan.md`](docs/plans/clerk-auth-multi-conversation-plan.md) — Clerk-enabled multi-conversation feature: anonymous single chat, authenticated saved conversations, sidebar UX, rename/delete, and agent handoffs.
 - [`docs/plans/post-mvp-features-plan.md`](docs/plans/post-mvp-features-plan.md) — Post-MVP features: token streaming, conversation sidebar, and test infrastructure.
 
 ### Completed
 
 Plans that have been fully executed and are kept for historical reference.
 
+- [`docs/plans/clerk-auth-multi-conversation-plan.md`](docs/plans/clerk-auth-multi-conversation-plan.md) — Clerk-enabled multi-conversation feature: anonymous single chat, authenticated saved conversations, SQLite persistence, sidebar UX, rename/delete, and final integration review. All 6 phases ✅ done.
 - [`docs/plans/old/frontend-chat-ui-plan.md`](docs/plans/old/frontend-chat-ui-plan.md) — Frontend chat UI: API client (native fetch + Zod), Zustand store, 6 React components, end-to-end wiring, and UX polish. All 5 phases ✅ done.
 - [`docs/plans/old/backend-ollama-communication-plan.md`](docs/plans/old/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: all 5 phases ✅ done.
 - [`docs/plans/old/scaffolding-plan.md`](docs/plans/old/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration. All 6 steps complete; frontend wiring tracked in `docs/plans/frontend-chat-ui-plan.md`.
@@ -140,6 +141,11 @@ Plans that have been fully executed and are kept for historical reference.
 | Guide | Description |
 |-------|-------------|
 | [`docs/quickstart.md`](docs/quickstart.md) | Mac-native quickstart: prerequisites, Docker Compose setup, local dev, port reference, and useful commands |
+
+## Copilot Workflow Assets
+
+- `.github/hooks/secrets-scanner/` provides an optional session-end secret scan hook for modified files.
+- `.github/skills/scaffold-contract-slice.skill.md` provides a repo-specific contract-first endpoint scaffolding workflow.
 
 ## Next Steps
 

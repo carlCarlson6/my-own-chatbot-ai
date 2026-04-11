@@ -151,16 +151,20 @@ Keep the AI runtime and deployment setup aligned with the authenticated multi-co
   - Keep secrets out of the repo and document variable names only.
   - Update infra docs if new services, volumes, or env vars are introduced.
 
-## Phase 6 — Integration Review and Verification ⏳ Pending
+## Phase 6 — Integration Review and Verification ✅ Done
 
 Confirm the full feature behaves coherently across the anonymous single-chat path, authenticated ownership rules, frontend UX, and deployment/runtime configuration.
 
 ### Planned work
 
-- `danny`
-  - Verify dependency order was respected: contract -> backend auth/persistence -> frontend -> infra.
-  - Confirm the final flow for anonymous single chat, sign-in, conversation creation, switching, rename, delete, and reload.
-  - Route final project-aware review to `juanjo` for a correctness pass on the integrated changes.
+- `aitor` ✅ Done
+  - Resolved the confirmed frontend race in `frontend/src/store/chatStore.ts` by invalidating stale async history-load and send-message completions, so older responses cannot overwrite a newer conversation selection or a freshly started conversation during integrated review.
+- `salva` ✅ Done
+  - Fixed `backend/src/MyOwnChatbotAi.Api/Grains/ConversationGrain.cs` so when the initial managed Ollama send fails, the empty persisted saved conversation is rolled back instead of surfacing later as an orphaned authenticated sidebar entry.
+- `danny` ✅ Done
+  - Verified the dependency order was respected in execution: contract -> backend auth/persistence -> frontend -> infra.
+  - Confirmed the implemented flow covers anonymous single chat, sign-in, conversation creation, switching, rename, delete, and saved-history reload.
+  - Routed a final project-aware review through `juanjo`; the rereview reported **no material issues found** after the integrated frontend/backend fixes landed.
 
 ## Acceptance Criteria
 
