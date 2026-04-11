@@ -37,9 +37,7 @@ public static class ClerkAuthenticationExtensions
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
-                options.RequireHttpsMetadata = clerkOptions.RequireHttpsMetadata;
                 options.SaveToken = false;
-                options.RefreshOnIssuerKeyNotFound = true;
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -56,12 +54,6 @@ public static class ClerkAuthenticationExtensions
                 {
                     options.TokenValidationParameters.IssuerSigningKey =
                         CreateSigningKey(clerkOptions.JwtVerificationPublicKey);
-                }
-                else if (!string.IsNullOrWhiteSpace(clerkOptions.ResolvedJwksUrl))
-                {
-                    options.ConfigurationManager = new ClerkJwksConfigurationManager(
-                        clerkOptions.ResolvedJwksUrl,
-                        clerkOptions.RequireHttpsMetadata);
                 }
             })
             .AddScheme<AuthenticationSchemeOptions, DisabledAuthenticationHandler>(
@@ -115,22 +107,6 @@ public static class ClerkAuthenticationExtensions
             await context.Response.WriteAsJsonAsync(
                 new ApiError("invalid_token", "The Clerk bearer token is expired, invalid, or has been tampered with."));
         });
-    }
-
-    public static WebApplication RegisterClerkAuthenticationResourceCleanup(this WebApplication app)
-    {
-        var jwtBearerOptions = app.Services
-            .GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
-            .Get(JwtBearerDefaults.AuthenticationScheme);
-
-        if (jwtBearerOptions.ConfigurationManager is IDisposable disposableConfigurationManager)
-        {
-            app.Lifetime.ApplicationStopped.Register(static state =>
-                ((IDisposable)state!).Dispose(),
-                disposableConfigurationManager);
-        }
-
-        return app;
     }
 
     private static string SelectScheme(HttpRequest request, ClerkAuthenticationOptions clerkOptions) =>
