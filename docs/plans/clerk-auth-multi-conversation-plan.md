@@ -194,6 +194,7 @@ Clerk session tokens are signed with the instance's **private key** and must be 
   - Review the current backend Clerk token-validation path and correct it so bearer session tokens are verified using Clerk's public key / JWKS model.
   - Confirm the backend extracts the user identity from the validated Clerk session token claims used by the conversation flows.
   - Keep anonymous conversation routes working while ensuring invalid or tampered bearer tokens fail predictably.
+  - Rereview follow-up note: the explicit `Clerk__JwtVerificationPublicKey` path now copies imported RSA public parameters into the returned signing key so the temporary `RSA` instance is disposed immediately instead of being leaked for app lifetime.
 - `aitor` ✅ Done
   - Review the current frontend Clerk token-fetching path and confirm the API client retrieves the session token from Clerk and sends it via the `Authorization: Bearer` header for signed-in requests.
   - Tighten the frontend auth bridge if needed so the backend always receives the intended Clerk session token for authenticated multi-conversation actions.

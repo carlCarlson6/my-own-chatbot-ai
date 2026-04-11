@@ -155,9 +155,9 @@ public static class ClerkAuthenticationExtensions
             return new JsonWebKey(normalizedPublicKey);
         }
 
-        var rsa = RSA.Create();
+        using var rsa = RSA.Create();
         rsa.ImportFromPem(normalizedPublicKey.Replace("\\n", "\n"));
-        return new RsaSecurityKey(rsa);
+        return new RsaSecurityKey(rsa.ExportParameters(includePrivateParameters: false));
     }
 }
 
