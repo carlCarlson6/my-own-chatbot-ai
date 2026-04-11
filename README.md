@@ -109,7 +109,7 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 
 ### WIP / In-Progress
 
-- [`docs/plans/clerk-auth-multi-conversation-plan.md`](docs/plans/clerk-auth-multi-conversation-plan.md) — Clerk-authenticated multi-conversation feature: auth foundation, user-owned conversation persistence, sidebar UX, rename/delete, and agent handoffs.
+- [`docs/plans/clerk-auth-multi-conversation-plan.md`](docs/plans/clerk-auth-multi-conversation-plan.md) — Clerk-enabled multi-conversation feature: anonymous single chat, authenticated saved conversations, sidebar UX, rename/delete, and agent handoffs.
 - [`docs/plans/post-mvp-features-plan.md`](docs/plans/post-mvp-features-plan.md) — Post-MVP features: token streaming, conversation sidebar, and test infrastructure.
 
 ### Completed

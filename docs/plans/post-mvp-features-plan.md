@@ -74,7 +74,7 @@ The Ollama `/api/chat` endpoint supports `"stream": true` returning newline-deli
 
 ## Phase 2 — Conversation Sidebar ⏳ Pending
 
-List, browse, and switch between multiple conversations. The detailed execution plan for the authenticated version of this feature now lives in [`docs/plans/clerk-auth-multi-conversation-plan.md`](clerk-auth-multi-conversation-plan.md), because authentication and user-owned persistence are now treated as prerequisites.
+List, browse, and switch between multiple conversations. The detailed execution plan for the Clerk-enabled version of this feature now lives in [`docs/plans/clerk-auth-multi-conversation-plan.md`](clerk-auth-multi-conversation-plan.md), because signed-in multi-conversation management and user-owned persistence are now treated as prerequisites while anonymous users remain on a single-chat path.
 
 ### 2.1 — Contract update
 - Add `GET /api/conversations` to `contracts/chatbot-api.openapi.yml`
