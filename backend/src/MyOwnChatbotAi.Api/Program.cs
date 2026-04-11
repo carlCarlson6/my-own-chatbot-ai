@@ -27,6 +27,7 @@ builder.Host.UseOrleans(silo =>
 var app = builder.Build();
 
 app.UseAuthentication();
+app.UseClerkBearerValidation();
 app.UseAuthorization();
 
 app.MapGet("/", () => Results.Ok(new { service = "my-own-chatbot-ai-api", status = "ok" }));

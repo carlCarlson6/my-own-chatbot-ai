@@ -190,7 +190,7 @@ Clerk session tokens are signed with the instance's **private key** and must be 
 
 ### Planned work
 
-- `salva`
+- `salva` ✅ Done
   - Review the current backend Clerk token-validation path and correct it so bearer session tokens are verified using Clerk's public key / JWKS model.
   - Confirm the backend extracts the user identity from the validated Clerk session token claims used by the conversation flows.
   - Keep anonymous conversation routes working while ensuring invalid or tampered bearer tokens fail predictably.

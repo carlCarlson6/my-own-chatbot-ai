@@ -108,9 +108,11 @@ Anonymous chat still works without Clerk. To enable authenticated saved multi-co
 | --- | --- |
 | Frontend dev (Vite) | `VITE_CLERK_PUBLISHABLE_KEY` |
 | Frontend containers (Docker / Kubernetes) | `CLERK_PUBLISHABLE_KEY` |
-| Backend API | `Clerk__Authority`, optional `Clerk__Audience`, optional `Clerk__RequireHttpsMetadata` |
+| Backend API | `Clerk__Authority`, optional `Clerk__Audience`, optional `Clerk__JwksUrl`, optional `Clerk__JwtVerificationPublicKey`, optional `Clerk__RequireHttpsMetadata` |
 
 See [`infrastructure/README.md`](infrastructure/README.md) for the Docker Compose and Kubernetes wiring.
+
+When `Clerk__JwksUrl` is omitted, the backend derives Clerk JWKS verification from `Clerk__Authority` by appending `/.well-known/jwks.json`. You can also provide `Clerk__JwtVerificationPublicKey` directly when you want the API to validate Clerk bearer session tokens against a fixed public verification key instead of fetching JWKS.
 
 ## Architecture Boundaries
 
