@@ -40,9 +40,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       Ollama__BaseUrl: http://ollama:11434
       ConversationPersistence__DatabasePath: /app/App_Data/conversations.sqlite
-      Clerk__JwksUrl: ${CLERK__JWKS_URL:-}
       Clerk__JwtVerificationPublicKey: ${CLERK__JWT_VERIFICATION_PUBLIC_KEY:-}
-      Clerk__RequireHttpsMetadata: ${CLERK__REQUIRE_HTTPS_METADATA:-true}
     volumes:
       - backend_data:/app/App_Data
     depends_on:

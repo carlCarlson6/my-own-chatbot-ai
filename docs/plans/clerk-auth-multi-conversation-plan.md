@@ -252,7 +252,7 @@ Simplify the backend Clerk auth flow one step further so it uses only the explic
   - Remove the backend `Clerk__JwksUrl` configuration path and any now-unused JWKS-fetch helper code.
   - Keep backend validation focused on the explicit Clerk public verification key, token signature, token lifetime, and extracting the user id from the validated token claims.
   - Preserve anonymous routes when no bearer token is sent and keep invalid or tampered bearer tokens failing predictably.
-- `vicente`
+- `vicente` ✅ Done
   - Update runtime/docs/config guidance so backend auth no longer documents or expects `Clerk__JwksUrl` or any now-unused HTTPS-metadata setting for this flow.
   - Keep only the frontend publishable key and the backend public verification key inputs that remain relevant to the public-key-only validation model.
 - `danny`
