@@ -1,4 +1,5 @@
 import type { ApiError } from '../types/chat'
+import { getAuthToken } from '../auth/clerk'
 import { apiErrorSchema } from './schemas'
 
 // ── Typed API error ───────────────────────────────────────────────────────────
@@ -35,9 +36,22 @@ async function handleResponse(response: Response): Promise<unknown> {
   return body
 }
 
+async function createHeaders(): Promise<Headers> {
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+  })
+
+  const token = await getAuthToken()
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  return headers
+}
+
 export async function apiGet(path: string): Promise<unknown> {
   const response = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: await createHeaders(),
   })
   return handleResponse(response)
 }
@@ -45,7 +59,7 @@ export async function apiGet(path: string): Promise<unknown> {
 export async function apiPost(path: string, body: unknown): Promise<unknown> {
   const response = await fetch(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await createHeaders(),
     body: JSON.stringify(body),
   })
   return handleResponse(response)

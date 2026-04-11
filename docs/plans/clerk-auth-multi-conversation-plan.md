@@ -60,7 +60,7 @@ Establish Clerk as the capability that unlocks saved multi-conversation features
 
 ### Planned work
 
-- `isabel` ✅ Done
+- `contract-updater` ✅ Done
   - Add an auth scheme to `contracts/chatbot-api.openapi.yml` for protected conversation-management endpoints.
   - Document which routes remain anonymous-capable (`create`, `send`, active history flow) and which require sign-in (`list`, `rename`, `delete`, saved multi-conversation retrieval).
   - Add `401` / `403` responses where authenticated access is required.
@@ -68,7 +68,7 @@ Establish Clerk as the capability that unlocks saved multi-conversation features
   - Integrate Clerk token validation into the backend request pipeline.
   - Introduce a backend abstraction for the authenticated user id/claims used by conversation flows.
   - Ensure protected conversation-management endpoints fail predictably when auth is missing or invalid, without breaking anonymous single-chat behavior.
-- `aitor`
+- `aitor` ✅ Done
   - Add Clerk to the frontend shell (`ClerkProvider`, sign-in/sign-out, session awareness).
   - Preserve the anonymous chat entry point.
   - Expose a clear sign-in CTA to unlock multi-conversation history and management.
