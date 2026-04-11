@@ -42,6 +42,8 @@ services:
       ConversationPersistence__DatabasePath: /app/App_Data/conversations.sqlite
       Clerk__Authority: ${CLERK__AUTHORITY:-}
       Clerk__Audience: ${CLERK__AUDIENCE:-}
+      Clerk__JwksUrl: ${CLERK__JWKS_URL:-}
+      Clerk__JwtVerificationPublicKey: ${CLERK__JWT_VERIFICATION_PUBLIC_KEY:-}
       Clerk__RequireHttpsMetadata: ${CLERK__REQUIRE_HTTPS_METADATA:-true}
     volumes:
       - backend_data:/app/App_Data

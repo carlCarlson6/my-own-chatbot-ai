@@ -198,7 +198,7 @@ Clerk session tokens are signed with the instance's **private key** and must be 
   - Review the current frontend Clerk token-fetching path and confirm the API client retrieves the session token from Clerk and sends it via the `Authorization: Bearer` header for signed-in requests.
   - Tighten the frontend auth bridge if needed so the backend always receives the intended Clerk session token for authenticated multi-conversation actions.
   - Review note: confirmed `frontend/src/components/AuthAccessBanner.tsx` registers `useAuth().getToken()` through `setAuthTokenGetter(...)`, and `frontend/src/api/client.ts` awaits that getter and sends `Authorization: Bearer <token>` only when Clerk returns a session token, so no frontend code correction was required for this phase.
-- `vicente`
+- `vicente` ✅ Done
   - Update runtime/docs/config guidance for whichever Clerk public verification input the backend should use (for example JWKS URL or explicit public key), documenting variable names only and keeping secrets out of the repo.
 
 ### Acceptance criteria for this phase

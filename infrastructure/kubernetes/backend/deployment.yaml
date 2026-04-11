@@ -50,6 +50,18 @@ spec:
                   name: clerk-config
                   key: Clerk__Audience
                   optional: true
+            - name: Clerk__JwksUrl
+              valueFrom:
+                configMapKeyRef:
+                  name: clerk-config
+                  key: Clerk__JwksUrl
+                  optional: true
+            - name: Clerk__JwtVerificationPublicKey
+              valueFrom:
+                configMapKeyRef:
+                  name: clerk-config
+                  key: Clerk__JwtVerificationPublicKey
+                  optional: true
             - name: Clerk__RequireHttpsMetadata
               valueFrom:
                 configMapKeyRef:
