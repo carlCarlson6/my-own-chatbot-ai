@@ -92,9 +92,9 @@ Use a lightweight **SQLite-backed durable store** for authenticated conversation
   - Add ownership checks so one user cannot access another user's conversations.
   - Keep the anonymous path limited to one non-managed conversation flow.
   - Update title-generation logic so the first user message becomes the default title when no manual title exists.
-- `ivan`
-  - Confirm that loading prior messages into the active conversation preserves the AI context expected by Ollama-backed chat flows.
-  - Flag any AI/runtime performance concerns if larger persisted histories need truncation or summarization later.
+- `ivan` ✅ Done
+  - Confirmed that persisted ordered history is rehydrated into `ConversationGrain` and then forwarded as the full `OllamaMessage[]` input, so reopening a saved conversation preserves the Ollama chat context expected by the current backend flow.
+  - Review note: there is currently no truncation, summarization, or context-budget guardrail. If authenticated histories grow large, SQLite reload cost, request payload size, Ollama latency, and timeout/context-window pressure will all grow linearly and should be addressed in a later AI/runtime pass.
 - `vicente`
   - If a new persistence dependency is introduced, add the required container/Kubernetes/env wiring and document it.
 
