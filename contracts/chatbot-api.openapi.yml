@@ -17,7 +17,6 @@ info:
 
     Scope intentionally excluded from this version:
     - token streaming responses
-    - persistence/database storage
     - multi-user collaboration features
 servers:
   - url: http://localhost:5050
@@ -27,6 +26,36 @@ tags:
     description: Conversation lifecycle and message exchange
 paths:
   /api/conversations:
+    get:
+      tags: [Conversations]
+      summary: List saved conversations for the authenticated user
+      description: |
+        Protected route for loading the signed-in user's saved conversations.
+
+        Anonymous single-chat conversations are intentionally excluded because
+        they are not persisted or managed.
+      operationId: listConversations
+      security:
+        - clerkBearerAuth: []
+      responses:
+        '200':
+          description: Saved conversations loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversationSummary'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          description: Unexpected server failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
     post:
       tags: [Conversations]
       summary: Create a new conversation
@@ -34,8 +63,12 @@ paths:
         Anonymous-capable route for bootstrapping the current single-chat flow.
 
         Clients may call this endpoint without a bearer token. Authenticated
-        Clerk sessions may also call it so later phases can associate the
-        conversation with the signed-in user.
+        Clerk sessions may also call it to create a persisted, user-owned
+        conversation that later appears in `GET /api/conversations`.
+
+        When no title is provided, authenticated saved conversations start as
+        `New conversation` and may be auto-titled from the first user message
+        until a manual rename occurs.
       operationId: createConversation
       security:
         - {}
@@ -120,6 +153,103 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
 
+  /api/conversations/{conversationId}:
+    patch:
+      tags: [Conversations]
+      summary: Rename a saved conversation
+      description: |
+        Protected route for applying a manual title to an authenticated user's
+        saved conversation.
+
+        A successful rename marks the title as user-managed so future sends do
+        not replace it with an auto-generated first-message title.
+      operationId: renameConversation
+      security:
+        - clerkBearerAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          description: Unique saved conversation identifier
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenameConversationRequest'
+            examples:
+              default:
+                value:
+                  title: Project kickoff notes
+      responses:
+        '200':
+          description: Conversation renamed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationSummary'
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Unexpected server failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    delete:
+      tags: [Conversations]
+      summary: Delete a saved conversation
+      description: |
+        Protected route for hard-deleting an authenticated user's saved
+        conversation and its persisted message history.
+      operationId: deleteConversation
+      security:
+        - clerkBearerAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          description: Unique saved conversation identifier
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Conversation deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Unexpected server failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
   /api/conversations/{conversationId}/history:
     get:
       tags: [Conversations]
@@ -128,11 +258,10 @@ paths:
         Anonymous-capable route for loading the active conversation history in
         the current single-chat flow.
 
-        Reopening a saved, user-owned conversation will require a Clerk bearer
-        token once conversation persistence and management endpoints are added.
-        Those protected routes will return `401` when authentication is missing
-        or invalid and `403` when the signed-in user does not own the
-        conversation.
+        Saved, user-owned conversations reuse this route for reopening
+        persisted history. Those requests require a valid Clerk bearer token and
+        conversation ownership; anonymous callers remain limited to non-managed
+        single-chat conversations.
       operationId: getConversationHistory
       security:
         - {}
@@ -152,6 +281,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetConversationHistoryResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           description: Conversation not found
           content:
@@ -213,8 +346,10 @@ components:
       required:
         - conversationId
         - title
+        - hasManualTitle
         - model
         - createdAtUtc
+        - updatedAtUtc
         - status
       properties:
         conversationId:
@@ -222,11 +357,21 @@ components:
           format: uuid
         title:
           type: string
+          description: Current display title for the conversation.
+        hasManualTitle:
+          type: boolean
+          description: Whether the current title was explicitly set by the user.
         model:
           type: string
         createdAtUtc:
           type: string
           format: date-time
+        updatedAtUtc:
+          type: string
+          format: date-time
+          description: |
+            Timestamp updated when the conversation is created, renamed, or
+            receives persisted messages.
         status:
           $ref: '#/components/schemas/ConversationStatus'
 
@@ -251,6 +396,7 @@ components:
         - conversationId
         - userMessage
         - assistantMessage
+        - conversation
         - model
         - status
       properties:
@@ -261,6 +407,8 @@ components:
           $ref: '#/components/schemas/ChatMessage'
         assistantMessage:
           $ref: '#/components/schemas/ChatMessage'
+        conversation:
+          $ref: '#/components/schemas/ConversationSummary'
         model:
           type: string
         status:
@@ -278,7 +426,10 @@ components:
       required:
         - conversationId
         - title
+        - hasManualTitle
         - model
+        - createdAtUtc
+        - updatedAtUtc
         - status
         - messages
       properties:
@@ -287,14 +438,74 @@ components:
           format: uuid
         title:
           type: string
+        hasManualTitle:
+          type: boolean
         model:
           type: string
+        createdAtUtc:
+          type: string
+          format: date-time
+        updatedAtUtc:
+          type: string
+          format: date-time
         status:
           $ref: '#/components/schemas/ConversationStatus'
         messages:
           type: array
           items:
             $ref: '#/components/schemas/ChatMessage'
+
+    ConversationSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - conversationId
+        - title
+        - hasManualTitle
+        - model
+        - createdAtUtc
+        - updatedAtUtc
+        - status
+      properties:
+        conversationId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          description: |
+            Display title for the conversation. Saved conversations start as
+            `New conversation` when no manual title is provided, then may be
+            auto-generated from the first user message until renamed manually.
+        hasManualTitle:
+          type: boolean
+          description: Whether the current title was explicitly set by the user.
+        model:
+          type: string
+        createdAtUtc:
+          type: string
+          format: date-time
+        updatedAtUtc:
+          type: string
+          format: date-time
+          description: |
+            Timestamp updated when the conversation is created, renamed, or
+            receives persisted messages.
+        status:
+          $ref: '#/components/schemas/ConversationStatus'
+
+    RenameConversationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: |
+            New display title for the conversation. Surrounding whitespace is
+            trimmed before persistence.
 
     ChatMessageInput:
       type: object

@@ -20,16 +20,16 @@ Before starting implementation work, first inspect the current repo state and co
 
 | Area | Current state | Gap for this feature |
 |---|---|---|
-| Authentication | Backend now validates optional Clerk bearer tokens and exposes a current-user abstraction; anonymous conversation routes remain open | Frontend Clerk UX/runtime wiring and authenticated conversation ownership flows still need to be completed |
-| API contract | Declares Clerk bearer auth for future protected routes and marks create/send/history as anonymous-capable | Protected conversation-management endpoints and user-scoped response shapes are still missing |
-| Backend conversation model | Orleans `ConversationGrain` stores one conversation per grain with in-memory grain storage and no user ownership | User scoping, listing, rename/delete flows, and durable storage strategy are missing |
-| Frontend chat UX | Single active conversation in `chatStore.ts`, no sidebar, no auth gate | Needs multi-conversation state, sidebar UI, and auth-aware API calls |
-| Infrastructure | App stack exists for frontend/backend/Ollama only | Clerk env vars/secrets and any persistence dependency must be wired into infra/docs |
+| Authentication | Backend validates optional Clerk bearer tokens, the frontend can attach signed-in session tokens, and anonymous conversation routes remain open | Multi-conversation API/UI flows still need to consume the authenticated ownership model end to end |
+| API contract | Declares Clerk bearer auth, protected saved-conversation management routes, and shared summary metadata for authenticated persistence flows | Backend and frontend still need to implement the new list/rename/delete contract |
+| Backend conversation model | Authenticated conversations now persist in SQLite with user ownership, ordered message history, generated default titles, and summary timestamps | List, rename, and delete endpoints still need to be exposed on top of the persisted model |
+| Frontend chat UX | Current chat UI still centers on one active conversation and does not yet expose a saved-conversation sidebar | Needs multi-conversation state, sidebar UI, and auth-aware conversation-management calls |
+| Infrastructure | Clerk env vars and SQLite persistence wiring are now documented and connected across local/container/Kubernetes setups | Later phases only need incremental infra/docs changes if new runtime knobs are introduced |
 
 ## Assumptions
 
 - Unauthenticated users keep a single chat experience only. Clerk sign-in is required to unlock saved multi-conversation management.
-- Conversations must be tied to a Clerk user and remain available after page refreshes. The current in-memory-only setup is not enough for this expectation, so persistence work is part of the plan.
+- Conversations tied to a Clerk user are expected to remain available after page refreshes; the remaining work should build on the SQLite-backed persistence that is now in place.
 - Deleting a conversation is a hard delete of that conversation and its stored message history for the owning user.
 - The default title is derived from the **first user message only**: trim whitespace, keep the first 100 characters, and append `...` when the message exceeds 100 characters.
 - If a conversation exists before the first user message is sent, it uses a temporary fallback title such as `New conversation` until the first user message arrives.
@@ -104,7 +104,7 @@ Add the backend contract and endpoints required to browse, rename, delete, and r
 
 ### Planned work
 
-- `isabel`
+- `isabel` ✅ Done
   - Add `GET /api/conversations` returning user-scoped `ConversationSummary[]`.
   - Add `PATCH /api/conversations/{conversationId}` for renaming.
   - Add `DELETE /api/conversations/{conversationId}` for deletion.
