@@ -1,4 +1,5 @@
 using MyOwnChatbotAi.Api.Contracts;
+using MyOwnChatbotAi.Api.Authentication;
 using MyOwnChatbotAi.Api.Grains;
 
 namespace MyOwnChatbotAi.Api.Features.Conversations;
@@ -20,7 +21,10 @@ public static class SendMessageEndpoint
         return group;
     }
 
-    private static async Task<IResult> Handle(SendMessageRequest request, IGrainFactory grains)
+    private static async Task<IResult> Handle(
+        SendMessageRequest request,
+        IGrainFactory grains,
+        ICurrentUser currentUser)
     {
         if (request.Message is null || string.IsNullOrWhiteSpace(request.Message.Content))
         {
@@ -40,8 +44,14 @@ public static class SendMessageEndpoint
 
         try
         {
-            var response = await grain.SendMessageAsync(request.Message);
-            return Results.Ok(response);
+            var response = await grain.SendMessageAsync(
+                currentUser.UserId,
+                request.Message,
+                request.ConversationId is null);
+
+            return response is null
+                ? Results.NotFound(new ApiError("conversation_not_found", $"Conversation '{conversationId}' was not found.", "conversationId"))
+                : Results.Ok(response);
         }
         catch (InvalidOperationException ex)
         {

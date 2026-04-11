@@ -86,7 +86,7 @@ Use a lightweight **SQLite-backed durable store** for authenticated conversation
 
 ### Planned work
 
-- `salva`
+- `salva` ✅ Done
   - Define the canonical backend model for a user-owned conversation summary and message history.
   - Choose and implement a persistence approach that survives refreshes and supports efficient list/history lookups.
   - Add ownership checks so one user cannot access another user's conversations.

@@ -1,11 +1,13 @@
 using MyOwnChatbotAi.Api.Authentication;
 using Microsoft.Extensions.Options;
 using MyOwnChatbotAi.Api.Features.Conversations;
+using MyOwnChatbotAi.Api.Features.Conversations.Persistence;
 using MyOwnChatbotAi.Api.Services.Ollama;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddClerkAuthenticationFoundation(builder.Configuration);
+builder.Services.AddConversationPersistence(builder.Configuration);
 
 builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection(OllamaOptions.SectionName));
 builder.Services.AddHttpClient<IOllamaClient, OllamaHttpClient>()

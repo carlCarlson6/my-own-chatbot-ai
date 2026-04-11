@@ -1,4 +1,5 @@
 using MyOwnChatbotAi.Api.Contracts;
+using MyOwnChatbotAi.Api.Authentication;
 using MyOwnChatbotAi.Api.Grains;
 
 namespace MyOwnChatbotAi.Api.Features.Conversations;
@@ -17,11 +18,14 @@ public static class CreateConversationEndpoint
         return group;
     }
 
-    private static async Task<IResult> Handle(CreateConversationRequest? request, IGrainFactory grains)
+    private static async Task<IResult> Handle(
+        CreateConversationRequest? request,
+        IGrainFactory grains,
+        ICurrentUser currentUser)
     {
         var conversationId = Guid.NewGuid();
         var grain = grains.GetGrain<IConversationGrain>(conversationId);
-        var response = await grain.InitializeAsync(request?.Title ?? string.Empty);
+        var response = await grain.InitializeAsync(currentUser.UserId, request?.Title ?? string.Empty);
         return Results.Created($"/api/conversations/{response.ConversationId}/history", response);
     }
 }
