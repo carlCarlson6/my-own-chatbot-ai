@@ -9,11 +9,17 @@ export interface ChatMessage {
   createdAtUtc: string
 }
 
-export interface Conversation {
+export interface ConversationSummary {
   conversationId: string
   title: string
+  hasManualTitle: boolean
   model: string
+  createdAtUtc: string
+  updatedAtUtc: string
   status: ConversationStatus
+}
+
+export interface Conversation extends ConversationSummary {
   messages: ChatMessage[]
 }
 

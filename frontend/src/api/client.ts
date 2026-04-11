@@ -64,3 +64,20 @@ export async function apiPost(path: string, body: unknown): Promise<unknown> {
   })
   return handleResponse(response)
 }
+
+export async function apiPatch(path: string, body: unknown): Promise<unknown> {
+  const response = await fetch(path, {
+    method: 'PATCH',
+    headers: await createHeaders(),
+    body: JSON.stringify(body),
+  })
+  return handleResponse(response)
+}
+
+export async function apiDelete(path: string): Promise<unknown> {
+  const response = await fetch(path, {
+    method: 'DELETE',
+    headers: await createHeaders(),
+  })
+  return handleResponse(response)
+}

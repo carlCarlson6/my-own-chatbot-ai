@@ -45,9 +45,8 @@ function SignedInSummary() {
       <div>
         <p className="text-sm font-semibold text-emerald-200">Signed in</p>
         <p className="text-sm text-gray-200">
-          Connected as <span className="font-medium text-white">{identity}</span>. Saved
-          multi-conversation history and management will use this account as later phases
-          ship.
+          Connected as <span className="font-medium text-white">{identity}</span>. Your saved
+          conversations, sidebar history, and rename/delete actions are tied to this account.
         </p>
       </div>
 
@@ -92,8 +91,8 @@ export function AuthAccessBanner({ clerkEnabled }: AuthAccessBannerProps) {
                 Continue anonymously or sign in
               </p>
               <p className="text-sm text-gray-300">
-                Anonymous single-chat stays open. Sign in to unlock saved
-                multi-conversation history and management as those features arrive.
+                Anonymous single-chat stays open. Sign in to unlock your saved
+                multi-conversation sidebar, history, rename, and delete actions.
               </p>
             </div>
 

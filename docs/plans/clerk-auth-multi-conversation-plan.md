@@ -114,13 +114,13 @@ Add the backend contract and endpoints required to browse, rename, delete, and r
   - Keep saved-conversation history owner-aware and auth-protected while preserving the anonymous single-chat history path if it remains part of the existing flow.
   - Return consistent `404`, `401`, and `403` behavior for unknown, unauthenticated, and unauthorized access on protected routes.
 
-## Phase 4 — Frontend Sidebar and Multi-Conversation UX ⏳ Pending
+## Phase 4 — Frontend Sidebar and Multi-Conversation UX ✅ Done
 
 Add the left-hand conversation panel for signed-in users while keeping the anonymous user experience focused on one active chat.
 
 ### Planned work
 
-- `aitor`
+- `aitor` ✅ Done
   - Extend the frontend API client and Zod schemas for list/rename/delete operations.
   - Refactor the Zustand store to hold:
     - `conversations`
@@ -133,8 +133,8 @@ Add the left-hand conversation panel for signed-in users while keeping the anony
   - Add edit and delete buttons on each conversation row.
   - Keep anonymous users on the single-chat layout, with a prompt to sign in for multi-conversation access.
   - Preserve the existing chat layout behavior on small screens with a responsive/collapsible sidebar treatment.
-- `danny`
-  - Ensure frontend sequencing waits for backend contract/auth readiness before UI wiring begins.
+- `danny` ✅ Done
+  - Frontend execution was held until Phase 3 contract and backend conversation-management work were completed, then delegated to `aitor` against the updated backend/API baseline.
 
 ## Phase 5 — AI/Runtime and Infrastructure Alignment ⏳ Pending
 
