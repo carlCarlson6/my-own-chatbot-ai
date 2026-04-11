@@ -18,7 +18,6 @@ export interface CreateConversationRequest {
 
 export interface ChatMessageInput {
   content: string
-  clientMessageId?: string
 }
 
 export interface SendMessageRequest {
