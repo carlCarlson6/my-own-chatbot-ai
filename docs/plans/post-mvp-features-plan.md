@@ -83,7 +83,7 @@ Add real-time assistant token streaming while preserving the existing non-stream
 
 ### Planned work
 
-- `isabel` ⏳ Pending
+- `isabel` ✅ Done
   - Add `POST /api/conversations/stream` to `contracts/chatbot-api.openapi.yml`.
   - Reuse the existing `SendMessageRequest` shape unless repo reality shows a required streaming-specific field.
   - Document the `text/event-stream` response and define the event payloads needed for typed frontend/backend alignment (for example started/chunk/completed/error events).

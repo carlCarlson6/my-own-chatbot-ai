@@ -16,7 +16,6 @@ info:
       conversations
 
     Scope intentionally excluded from this version:
-    - token streaming responses
     - multi-user collaboration features
 servers:
   - url: http://localhost:5050
@@ -107,6 +106,10 @@ paths:
         Clients may call this endpoint without a bearer token. When a Clerk
         bearer token is present, later phases may use it to associate the active
         conversation with the signed-in user without changing the request shape.
+
+        This request/response route remains the supported fallback for clients
+        that cannot or do not want to consume the streaming
+        `POST /api/conversations/stream` SSE flow.
       operationId: sendMessage
       security:
         - {}
@@ -148,6 +151,103 @@ paths:
                 $ref: '#/components/schemas/ApiError'
         '500':
           description: Unexpected server failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /api/conversations/stream:
+    post:
+      tags: [Conversations]
+      summary: Send a user message and stream the assistant reply over SSE
+      description: |
+        Anonymous-capable route for the active chat flow.
+
+        This endpoint reuses the same request payload as
+        `POST /api/conversations/send`, but returns a `text/event-stream`
+        response so the assistant reply can be rendered incrementally.
+
+        Each SSE frame uses `event: <type>` and a `data:` JSON payload matching
+        one of the schemas under `ConversationStreamEvent`. Clients should treat
+        `started`, `chunk`, `completed`, and `error` as the canonical event
+        types for typed frontend/backend alignment.
+
+        The existing non-streaming `POST /api/conversations/send` route remains
+        the supported fallback path for environments where SSE is unavailable or
+        disabled.
+      operationId: streamMessage
+      security:
+        - {}
+        - clerkBearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+            examples:
+              existingConversation:
+                value:
+                  conversationId: 11111111-1111-1111-1111-111111111111
+                  message:
+                    content: Summarize the benefits of Orleans for chat orchestration.
+              createOnFirstMessage:
+                value:
+                  message:
+                    content: Hello, can you help me scaffold my chatbot project?
+      responses:
+        '200':
+          description: |
+            SSE stream established successfully.
+
+            Each `data:` payload must match one of the schemas in
+            `ConversationStreamEvent`:
+            - `started`: confirms the accepted conversation context and stable ids
+            - `chunk`: incremental assistant text deltas
+            - `completed`: final successful assembled reply and conversation summary
+            - `error`: terminal stream failure after the SSE connection is opened
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  Server-Sent Events stream. Each event frame uses `event:
+                  <type>` plus a `data:` line containing a JSON payload matching
+                  `ConversationStreamEvent`.
+              examples:
+                successFlow:
+                  summary: Started, chunked, and completed stream
+                  value: |
+                    event: started
+                    data: {"type":"started","conversationId":"11111111-1111-1111-1111-111111111111","userMessage":{"messageId":"22222222-2222-2222-2222-222222222222","role":"user","content":"Hello, can you help me scaffold my chatbot project?","createdAtUtc":"2026-04-11T12:00:00Z"},"conversation":{"conversationId":"11111111-1111-1111-1111-111111111111","title":"New conversation","hasManualTitle":false,"model":"llama3.1","createdAtUtc":"2026-04-11T12:00:00Z","updatedAtUtc":"2026-04-11T12:00:00Z","status":"active"},"model":"llama3.1","assistantMessageId":"33333333-3333-3333-3333-333333333333"}
+                    
+                    event: chunk
+                    data: {"type":"chunk","conversationId":"11111111-1111-1111-1111-111111111111","assistantMessageId":"33333333-3333-3333-3333-333333333333","delta":"Sure — let's start by defining the API contract.","sequence":0}
+                    
+                    event: completed
+                    data: {"type":"completed","conversationId":"11111111-1111-1111-1111-111111111111","userMessage":{"messageId":"22222222-2222-2222-2222-222222222222","role":"user","content":"Hello, can you help me scaffold my chatbot project?","createdAtUtc":"2026-04-11T12:00:00Z"},"assistantMessage":{"messageId":"33333333-3333-3333-3333-333333333333","role":"assistant","content":"Sure — let's start by defining the API contract.","createdAtUtc":"2026-04-11T12:00:02Z"},"conversation":{"conversationId":"11111111-1111-1111-1111-111111111111","title":"Hello, can you help me scaffold my chatbot project?","hasManualTitle":false,"model":"llama3.1","createdAtUtc":"2026-04-11T12:00:00Z","updatedAtUtc":"2026-04-11T12:00:02Z","status":"active"},"model":"llama3.1","status":"completed","latencyMs":1987}
+                errorFlow:
+                  summary: Stream opened but fails before completion
+                  value: |
+                    event: started
+                    data: {"type":"started","conversationId":"11111111-1111-1111-1111-111111111111","userMessage":{"messageId":"22222222-2222-2222-2222-222222222222","role":"user","content":"Hello, can you help me scaffold my chatbot project?","createdAtUtc":"2026-04-11T12:00:00Z"},"conversation":{"conversationId":"11111111-1111-1111-1111-111111111111","title":"New conversation","hasManualTitle":false,"model":"llama3.1","createdAtUtc":"2026-04-11T12:00:00Z","updatedAtUtc":"2026-04-11T12:00:00Z","status":"active"},"model":"llama3.1","assistantMessageId":"33333333-3333-3333-3333-333333333333"}
+                    
+                    event: error
+                    data: {"type":"error","conversationId":"11111111-1111-1111-1111-111111111111","assistantMessageId":"33333333-3333-3333-3333-333333333333","code":"upstream_model_error","message":"Ollama closed the response stream before completion."}
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Unexpected server failure before the SSE stream is established
           content:
             application/json:
               schema:
@@ -419,6 +519,143 @@ components:
           format: int32
           minimum: 0
           description: Optional server-side processing duration.
+
+    ConversationStreamEvent:
+      oneOf:
+        - $ref: '#/components/schemas/ConversationStreamStartedEvent'
+        - $ref: '#/components/schemas/ConversationStreamChunkEvent'
+        - $ref: '#/components/schemas/ConversationStreamCompletedEvent'
+        - $ref: '#/components/schemas/ConversationStreamErrorEvent'
+      discriminator:
+        propertyName: type
+        mapping:
+          started: '#/components/schemas/ConversationStreamStartedEvent'
+          chunk: '#/components/schemas/ConversationStreamChunkEvent'
+          completed: '#/components/schemas/ConversationStreamCompletedEvent'
+          error: '#/components/schemas/ConversationStreamErrorEvent'
+
+    ConversationStreamStartedEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - conversationId
+        - userMessage
+        - conversation
+        - model
+        - assistantMessageId
+      properties:
+        type:
+          type: string
+          enum: [started]
+        conversationId:
+          type: string
+          format: uuid
+        userMessage:
+          $ref: '#/components/schemas/ChatMessage'
+        conversation:
+          $ref: '#/components/schemas/ConversationSummary'
+        model:
+          type: string
+        assistantMessageId:
+          type: string
+          format: uuid
+          description: |
+            Stable assistant message id reserved for the in-progress streamed
+            reply so chunk and completed events can target the same placeholder.
+
+    ConversationStreamChunkEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - conversationId
+        - assistantMessageId
+        - delta
+        - sequence
+      properties:
+        type:
+          type: string
+          enum: [chunk]
+        conversationId:
+          type: string
+          format: uuid
+        assistantMessageId:
+          type: string
+          format: uuid
+        delta:
+          type: string
+          description: Incremental assistant text emitted for this chunk.
+        sequence:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Zero-based chunk ordering within the stream.
+
+    ConversationStreamCompletedEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - conversationId
+        - userMessage
+        - assistantMessage
+        - conversation
+        - model
+        - status
+      properties:
+        type:
+          type: string
+          enum: [completed]
+        conversationId:
+          type: string
+          format: uuid
+        userMessage:
+          $ref: '#/components/schemas/ChatMessage'
+        assistantMessage:
+          $ref: '#/components/schemas/ChatMessage'
+        conversation:
+          $ref: '#/components/schemas/ConversationSummary'
+        model:
+          type: string
+        status:
+          type: string
+          enum: [completed]
+        latencyMs:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Optional server-side processing duration.
+
+    ConversationStreamErrorEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - conversationId
+        - assistantMessageId
+        - code
+        - message
+      properties:
+        type:
+          type: string
+          enum: [error]
+        conversationId:
+          type: string
+          format: uuid
+        assistantMessageId:
+          type: string
+          format: uuid
+        code:
+          type: string
+        message:
+          type: string
+        target:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
 
     GetConversationHistoryResponse:
       type: object
