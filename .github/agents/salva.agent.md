@@ -54,7 +54,7 @@ Follow all instruction files in `.github/instructions/` — they are the single 
 - **`contracts/chatbot-api.openapi.yml` is the source of truth.** Update the contract first when an API shape or status code changes, then implement backend behavior from the updated spec.
 - **Backend is the only Ollama integration point.** Do not introduce frontend-to-Ollama coupling.
 - **Orleans grains own conversation state and concurrency.** Keep stateful chat flows inside the relevant grain boundary.
-- **Do not modify `frontend/` or `infrastructure/` directly.** If backend work requires frontend or deployment changes, delegate with clear context to `aitor`, `contract-updater`, or `vicente`.
+- **Do not modify `frontend/` or `infrastructure/` directly.** If backend work requires frontend or deployment changes, delegate with clear context to `aitor`, `isabel`, or `vicente`.
 
 ## Verified Commands
 

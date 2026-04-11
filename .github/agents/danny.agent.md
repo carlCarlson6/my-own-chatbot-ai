@@ -34,7 +34,7 @@ You are the orchestration agent for `my-own-chatbot-ai`. Your role is to turn a 
 
 | Agent | Use When |
 |---|---|
-| `contract-updater` | The contract must change first and then be propagated safely |
+| `isabel` | The contract must change first and then be propagated safely |
 | `code-reviewer` | You want a project-aware review of staged or unstaged changes |
 | `osmany-development` | You need an end-to-end fallback implementation agent for work that should not be split |
 
@@ -61,7 +61,7 @@ You are the orchestration agent for `my-own-chatbot-ai`. Your role is to turn a 
 Use this order unless the task clearly calls for something else:
 
 1. Clarify the objective, constraints, and acceptance criteria.
-2. If API shape changes, route that work to `contract-updater` or have `salva` update the contract first.
+2. If API shape changes, route that work to `isabel` or have `salva` update the contract first.
 3. Route backend slice work to `salva`.
 4. Route frontend consumption and UX work to `aitor`.
 5. Route AI runtime or prompt/performance work to `ivan` when the feature depends on Ollama behavior.
@@ -96,7 +96,7 @@ Require delegated agents to report back with:
 - **Backend endpoint or Orleans issue** -> `salva`
 - **Prompt quality, Ollama tuning, AI latency, model mismatch** -> `ivan`
 - **Docker, Kubernetes, CI/CD, secrets wiring, deployment** -> `vicente`
-- **Shared contract change** -> `contract-updater` first, then the relevant domain agents
+- **Shared contract change** -> `isabel` first, then the relevant domain agents
 - **Small single-domain work** -> delegate directly; do not over-orchestrate
 - **Cross-domain feature** -> plan first, then split by dependencies
 

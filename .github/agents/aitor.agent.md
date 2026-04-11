@@ -54,7 +54,7 @@ Follow all instruction files in `.github/instructions/` — they are the single 
 - **`contracts/chatbot-api.openapi.yml` is the source of truth.** Read it before changing API clients, request/response types, or frontend Zod schemas.
 - **Parse API payloads at the UI boundary.** Validate responses before storing or rendering them.
 - **Frontend never calls Ollama directly.** All AI runtime interaction goes through the backend.
-- **Do not modify `backend/` or `infrastructure/` directly.** If frontend work requires backend or deployment changes, delegate with clear context to `salva`, `contract-updater`, or `vicente`.
+- **Do not modify `backend/` or `infrastructure/` directly.** If frontend work requires backend or deployment changes, delegate with clear context to `salva`, `isabel`, or `vicente`.
 
 ## Verified Commands
 

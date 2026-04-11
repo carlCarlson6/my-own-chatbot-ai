@@ -127,7 +127,7 @@ If your infrastructure work exposes a need for an application code change (e.g. 
    - `salva` for backend changes
    - `aitor` for frontend changes
    - `ivan` for Ollama-specific runtime or AI behavior changes
-   - `contract-updater` if the API contract must change before implementation
+   - `isabel` if the API contract must change before implementation
 3. Provide:
    - The context of the infrastructure task you are working on.
    - The specific objective (what needs to change and in which file).

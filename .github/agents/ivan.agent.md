@@ -54,7 +54,7 @@ Follow all instruction files in `.github/instructions/` — they are the single 
 - **Backend is the only Ollama integration point.** Never introduce direct frontend-to-Ollama communication.
 - **Keep AI changes explicit and observable.** Prefer named settings, documented defaults, and predictable failure behavior over hidden magic.
 - **Respect domain ownership.** If a change is purely backend slice work, hand it to `salva`; if it is deployment/runtime infrastructure, hand it to `vicente`; if it changes UI behavior, hand it to `aitor`.
-- **Read the contract first when AI behavior changes the API payload shape.** Use `contract-updater` or coordinate with `salva` before changing shared transport contracts.
+- **Read the contract first when AI behavior changes the API payload shape.** Use `isabel` or coordinate with `salva` before changing shared transport contracts.
 
 ## Verified Commands
 

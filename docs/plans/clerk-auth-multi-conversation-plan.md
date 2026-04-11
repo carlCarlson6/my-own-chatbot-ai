@@ -39,7 +39,7 @@ Before starting implementation work, first inspect the current repo state and co
 | Agent | Primary responsibilities | Depends on |
 |---|---|---|
 | `danny` | Break work into phases, sequence handoffs, keep contract/backend/frontend/infra aligned, and run integration review | Full repo review |
-| `contract-updater` | Update OpenAPI first for auth requirements and conversation-management endpoints/schemas | Goal and UX rules confirmed |
+| `isabel` | Review and maintain the OpenAPI contract first for auth requirements and conversation-management endpoints/schemas | Goal and UX rules confirmed |
 | `salva` | Implement backend auth integration, user-owned conversation model, endpoints, ownership checks, and title rules | Contract updates |
 | `aitor` | Integrate Clerk in the frontend, add auth-aware UX and token-aware API client calls, preserve anonymous single-chat flow, and build the multi-conversation sidebar experience | Contract + backend auth/API support |
 | `ivan` | Review AI/Ollama implications of per-conversation ownership and history loading; adjust AI-side configuration only if needed | Backend conversation flow decisions |
@@ -60,7 +60,7 @@ Establish Clerk as the capability that unlocks saved multi-conversation features
 
 ### Planned work
 
-- `contract-updater` ✅ Done
+- `isabel` ✅ Done
   - Add an auth scheme to `contracts/chatbot-api.openapi.yml` for protected conversation-management endpoints.
   - Document which routes remain anonymous-capable (`create`, `send`, active history flow) and which require sign-in (`list`, `rename`, `delete`, saved multi-conversation retrieval).
   - Add `401` / `403` responses where authenticated access is required.
@@ -100,7 +100,7 @@ Add the backend contract and endpoints required to browse, rename, delete, and r
 
 ### Planned work
 
-- `contract-updater`
+- `isabel`
   - Add `GET /api/conversations` returning user-scoped `ConversationSummary[]`.
   - Add `PATCH /api/conversations/{conversationId}` for renaming.
   - Add `DELETE /api/conversations/{conversationId}` for deletion.

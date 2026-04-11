@@ -87,4 +87,4 @@ If no drift: "Contract is consistent across backend DTOs and frontend Zod schema
 
 ## Note
 
-This skill **reports drift only** — it does not modify files. To apply fixes, use the `contract-updater` agent.
+This skill **reports drift only** — it does not modify files. To apply fixes, use the `isabel` agent.

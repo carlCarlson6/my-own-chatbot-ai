@@ -28,7 +28,7 @@ Use these references throughout:
 
 This prompt is for **cross-agent orchestration**, not direct implementation. Your job is to read the plan, inspect current repo state, find the next actionable task block in plan order, launch the correct specialist agent, and keep the plan moving until it is blocked or complete.
 
-Use this prompt when the user wants a **single execution flow** that can move across `contract-updater`, `salva`, `aitor`, `ivan`, `vicente`, and final review steps without manually switching agents between each phase.
+Use this prompt when the user wants a **single execution flow** that can move across `isabel`, `salva`, `aitor`, `ivan`, `vicente`, and final review steps without manually switching agents between each phase.
 
 Do **not** use this prompt for single-agent implementation work. For that, use `start-plan-task.prompt.md`.
 
