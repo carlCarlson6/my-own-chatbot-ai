@@ -41,6 +41,7 @@ The project has three services. Keep their identities stable:
 - Use **named volumes** for any persistent data (e.g. `chatbot-ollama-data`).
 - Use `depends_on` with `condition: service_healthy` to order startup correctly.
 - Define `healthcheck` for every service so dependents can wait for readiness.
+- Keep rollback simple: changes should remain compatible with `docker compose down` followed by a restart from the previous image/config.
 
 ## Kubernetes Conventions
 
@@ -51,6 +52,9 @@ The project has three services. Keep their identities stable:
 - Use `ClusterIP` for internal services (backend, ollama); use `LoadBalancer` for the public-facing frontend.
 - Keep resource `requests` and `limits` defined on every container.
 - Secrets (API keys, tokens) must **never** be committed to the repo. Use Kubernetes `Secret` objects or an external secrets manager and document the variable names without values.
+- Prefer container security defaults where the image/runtime permits them: `runAsNonRoot: true`, `allowPrivilegeEscalation: false`, `seccompProfile.type: RuntimeDefault`, and a read-only root filesystem when the service does not require writes outside mounted paths.
+- Configure **readiness** and **liveness** probes for all long-running services; add a **startup** probe when the service has a slow boot or model warm-up period.
+- Make rollout and rollback explicit: document `kubectl rollout status` and `kubectl rollout undo` steps whenever manifest behavior changes.
 
 ## Environment Variables
 
@@ -90,6 +94,12 @@ Before making changes to any infrastructure file, inspect the current state:
 - After changing Kubernetes manifests, validate them:
   ```bash
   kubectl apply --dry-run=client -f infrastructure/kubernetes/<service>/
+  ```
+- Prefer `kubectl apply --dry-run=server` as well when the target cluster is reachable.
+- After changing a Deployment, also verify rollout and rollback commands are known:
+  ```bash
+  kubectl -n chatbot-ai rollout status deployment/<service>
+  kubectl -n chatbot-ai rollout undo deployment/<service>
   ```
 - After changing `docker-compose.yml`, verify the config parses:
   ```bash

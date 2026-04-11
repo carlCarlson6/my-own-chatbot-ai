@@ -13,6 +13,10 @@ Use these references:
 - [Contract instructions](../instructions/api-contracts.instructions.md)
 - [Frontend instructions](../instructions/frontend.instructions.md)
 
+Recommended skills:
+- `scaffold-contract-slice` — for the end-to-end contract → backend → frontend scaffolding flow
+- `validate-contract` — for final drift checking before completion
+
 ---
 
 ## Step 1 — Read current contract

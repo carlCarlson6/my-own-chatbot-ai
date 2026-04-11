@@ -86,6 +86,7 @@ Invoke these for specific actions during a task:
 | `scaffold-plan` | Creating a new plan document from the canonical template |
 | `explain-grain` | Understanding an Orleans grain's state, lifecycle, and API wiring |
 | `validate-contract` | Checking backend DTOs align with the OpenAPI contract |
+| `scaffold-contract-slice` | Scaffolding a contract-first endpoint across OpenAPI, backend slice, and frontend transport |
 
 ## Before Claiming Success
 

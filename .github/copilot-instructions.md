@@ -39,5 +39,4 @@ No dedicated test project exists yet. Before running any command, verify real pr
 
 ## Authoritative Guidance
 
-All conventions, rules, and patterns live in `.github/instructions/` and `.github/agents/`. This file is project context only — do not duplicate guidance here.
-
+All conventions, rules, and workflow assets live under `.github/` — especially `.github/instructions/`, `.github/agents/`, `.github/prompts/`, `.github/skills/`, and `.github/hooks/`. This file is project context only — do not duplicate guidance here.

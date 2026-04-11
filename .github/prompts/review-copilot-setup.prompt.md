@@ -12,7 +12,7 @@ Review the `.github/` Copilot customization folder and produce a structured impr
 ## What this workflow does
 
 1. Reads every file in `.github/` to understand the current state
-2. Analyses the setup for issues across seven categories
+2. Analyses the setup for issues across eight categories
 3. Writes a dated improvement plan to `docs/plans/copilot-config-improvement-<YYYY-MM-DD>-plan.md`
 4. Registers the plan in `README.md`
 5. **Stops** — does not implement any change
@@ -39,6 +39,11 @@ Read every file listed below before forming any opinion. Do not skip files.
 - Every `*.skill.md` or `*.yml` file present, if the folder exists
 - Note if the folder is absent entirely
 
+**Hooks** (`.github/hooks/` — may not exist yet)
+- Every hook folder present
+- Each hook `README.md`, `hooks.json`, and any bundled scripts
+- Note if the folder is absent entirely
+
 Also read:
 - `README.md` — to understand the current project state and verified commands
 - `contracts/chatbot-api.openapi.yml` — to understand the API contract scope
@@ -46,7 +51,7 @@ Also read:
 
 ---
 
-## Step 2 — Analyse across six categories
+## Step 2 — Analyse across eight categories
 
 For each category, list specific findings with the file name and the problem or gap. If a category has no issues, note "No issues found."
 
@@ -117,7 +122,14 @@ Apply this test to every instruction file:
 
 Based on the codebase and tech stack, check whether any of the existing skills are stale or whether new gaps have emerged since the last review. Current skills are in `.github/skills/`.
 
-### Category 7 — Staleness and accuracy
+### Category 7 — Hook coverage
+
+- Are any reusable safety hooks missing for this repo's workflow?
+- Do existing hooks have clear installation/configuration guidance?
+- Do hook scripts avoid printing secrets or other sensitive values back to the terminal?
+- Are hook files discoverable from `README.md` or other Copilot workflow docs?
+
+### Category 8 — Staleness and accuracy
 - Do any files reference paths, commands, plans, or features that no longer exist?
 - Are verified commands still accurate against the real `package.json`, `.sln`, and `vite.config.*`?
 - Do instruction files still match the actual project structure and tech stack?
@@ -129,7 +141,7 @@ Based on the codebase and tech stack, check whether any of the existing skills a
 For each finding, assign:
 - **Impact**: High / Medium / Low
 - **Effort**: Small (< 30 min) / Medium (30–90 min) / Large (> 90 min)
-- **Category**: one of the seven above
+- **Category**: one of the eight above
 
 Group findings into:
 - **Must fix** — High impact regardless of effort
@@ -184,7 +196,7 @@ The plan is for human review and approval. It will be executed in a future sessi
 ## Output
 
 Provide a concise summary:
-- **Findings count by category**: e.g. "Redundancy: 2, applyTo: 3, Coverage gaps: 1, Skills: 2, Staleness: 1"
+- **Findings count by category**: e.g. "Redundancy: 2, applyTo: 3, Coverage gaps: 1, Skills: 2, Hooks: 1, Staleness: 1"
 - **Plan created at**: file path
 - **Top 3 must-fix items**: brief list
 - **Next step**: "Review `docs/plans/copilot-config-improvement-<date>-plan.md` and run this plan when ready"
