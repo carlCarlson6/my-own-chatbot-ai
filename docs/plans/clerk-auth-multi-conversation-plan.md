@@ -20,7 +20,7 @@ Before starting implementation work, first inspect the current repo state and co
 
 | Area | Current state | Gap for this feature |
 |---|---|---|
-| Authentication | Backend/frontend auth flow exists, but backend token validation needs to be tightened to Clerk's public-key/JWKS verification model | Add a corrective phase so backend validates the bearer session token signature correctly and frontend keeps sending the Clerk session token explicitly |
+| Authentication | Backend validates Clerk bearer tokens with Clerk public verification material / JWKS, frontend sends the Clerk session token in `Authorization: Bearer`, and anonymous routes remain open | No remaining auth gap for this feature plan |
 | API contract | Declares Clerk bearer auth, protected saved-conversation management routes, and shared summary metadata for authenticated persistence flows | Backend and frontend still need to implement the new list/rename/delete contract |
 | Backend conversation model | Authenticated conversations now persist in SQLite with user ownership, ordered message history, generated default titles, and summary timestamps | List, rename, and delete endpoints still need to be exposed on top of the persisted model |
 | Frontend chat UX | Current chat UI still centers on one active conversation and does not yet expose a saved-conversation sidebar | Needs multi-conversation state, sidebar UI, and auth-aware conversation-management calls |
@@ -180,7 +180,7 @@ Confirm the full feature behaves coherently across the anonymous single-chat pat
 - Deleting a conversation removes it from the sidebar and prevents further history retrieval for that user.
 - `README.md` and any infra docs reflect the required Clerk configuration and any new persistence/runtime prerequisites.
 
-## Phase 7 — Clerk JWT Validation Correction ⏳ Pending
+## Phase 7 — Clerk JWT Validation Correction ✅ Done
 
 Correct the backend/frontend auth flow so the backend validates the Clerk session token sent by the frontend using Clerk's **public key / JWKS**, which matches Clerk's token-signing model.
 
@@ -201,6 +201,10 @@ Clerk session tokens are signed with the instance's **private key** and must be 
   - Review note: confirmed `frontend/src/components/AuthAccessBanner.tsx` registers `useAuth().getToken()` through `setAuthTokenGetter(...)`, and `frontend/src/api/client.ts` awaits that getter and sends `Authorization: Bearer <token>` only when Clerk returns a session token, so no frontend code correction was required for this phase.
 - `vicente` ✅ Done
   - Update runtime/docs/config guidance for whichever Clerk public verification input the backend should use (for example JWKS URL or explicit public key), documenting variable names only and keeping secrets out of the repo.
+
+### Integration closeout note
+
+The Phase 7 follow-up review found and resolved two backend resource-lifetime issues in the new Clerk verification path: disposal for the custom JWKS configuration manager and disposal for the temporary RSA import used by the explicit public-key path. After those fixes landed, the final rereview reported no material issues.
 
 ### Acceptance criteria for this phase
 
