@@ -20,11 +20,11 @@ Before starting implementation work, first inspect the current repo state and co
 
 | Area | Current state | Gap for this feature |
 |---|---|---|
-| Authentication | Backend validates Clerk bearer tokens with Clerk public verification material / JWKS, frontend sends the Clerk session token in `Authorization: Bearer`, and anonymous routes remain open | No remaining auth gap for this feature plan |
-| API contract | Declares Clerk bearer auth, protected saved-conversation management routes, and shared summary metadata for authenticated persistence flows | Backend and frontend still need to implement the new list/rename/delete contract |
-| Backend conversation model | Authenticated conversations now persist in SQLite with user ownership, ordered message history, generated default titles, and summary timestamps | List, rename, and delete endpoints still need to be exposed on top of the persisted model |
-| Frontend chat UX | Current chat UI still centers on one active conversation and does not yet expose a saved-conversation sidebar | Needs multi-conversation state, sidebar UI, and auth-aware conversation-management calls |
-| Infrastructure | Clerk env vars and SQLite persistence wiring are now documented and connected across local/container/Kubernetes setups | Later phases only need incremental infra/docs changes if new runtime knobs are introduced |
+| Authentication | Backend validates Clerk bearer tokens with Clerk public verification material / JWKS, frontend sends the Clerk session token in `Authorization: Bearer`, and anonymous routes remain open | Remove authority/audience checks so the backend only validates the token signature/lifetime and extracts the user id from the validated token |
+| API contract | Declares Clerk bearer auth, protected saved-conversation management routes, and shared summary metadata for authenticated persistence flows | No contract gap for this follow-up |
+| Backend conversation model | Authenticated conversations persist in SQLite with user ownership, ordered message history, generated default titles, and authenticated conversation-management endpoints | No conversation-model gap for this follow-up |
+| Frontend chat UX | Signed-in users already get the multi-conversation sidebar and authenticated API calls already send Clerk bearer tokens | No frontend UX gap for this follow-up |
+| Infrastructure | Clerk and SQLite runtime wiring are documented and connected across local/container/Kubernetes setups | Simplify backend auth runtime/docs to match the new no-authority/no-audience validation model |
 
 ## Assumptions
 
@@ -213,3 +213,27 @@ The Phase 7 follow-up review found and resolved two backend resource-lifetime is
 - Anonymous routes remain usable without auth.
 - Invalid or tampered bearer tokens fail predictably.
 - Runtime/docs clearly describe the non-secret public verification configuration required by the backend.
+
+## Phase 8 — Clerk Token Validation Simplification ⏳ Pending
+
+Simplify the backend Clerk auth flow so it validates the frontend-sent bearer token and extracts the user id from the validated token, without authority or audience checks.
+
+### Planned work
+
+- `salva`
+  - Remove authority and audience validation from the backend Clerk token-validation path.
+  - Keep backend validation focused on Clerk public verification material / JWKS, token signature, token lifetime, and extracting the user id from the validated token claims.
+  - Preserve anonymous routes when no bearer token is sent and keep invalid or tampered bearer tokens failing predictably.
+- `vicente`
+  - Update runtime/docs/config guidance so backend auth no longer documents or expects authority/audience settings for this flow.
+  - Keep only the non-secret Clerk verification inputs that remain relevant to the simplified backend validation model.
+- `danny`
+  - Run integration review after the backend and infra/doc updates land, verify the simplified auth configuration stays coherent with the frontend bearer-token flow, and then close the reopened plan if no issues remain.
+
+### Acceptance criteria for this phase
+
+- Backend no longer performs authority or audience checks for Clerk bearer-token validation.
+- Backend still validates the bearer token using Clerk public verification material / JWKS and extracts the current user id from the validated token.
+- Anonymous routes remain usable without auth.
+- Invalid or tampered bearer tokens fail predictably.
+- `README.md` and infrastructure docs/manifests reflect the simplified backend auth configuration.
