@@ -20,11 +20,11 @@ Before starting implementation work, first inspect the current repo state and co
 
 | Area | Current state | Gap for this feature |
 |---|---|---|
-| Authentication | Backend validates Clerk bearer tokens with Clerk public verification material / JWKS, frontend sends the Clerk session token in `Authorization: Bearer`, and anonymous routes remain open | No remaining auth gap for this feature plan |
+| Authentication | Backend validates Clerk bearer tokens with Clerk public verification material, frontend sends the Clerk session token in `Authorization: Bearer`, and anonymous routes remain open | Remove the remaining backend JWKS URL path so Clerk validation uses only the explicit public-key flow |
 | API contract | Declares Clerk bearer auth, protected saved-conversation management routes, and shared summary metadata for authenticated persistence flows | No contract gap for this follow-up |
 | Backend conversation model | Authenticated conversations persist in SQLite with user ownership, ordered message history, generated default titles, and authenticated conversation-management endpoints | No conversation-model gap for this follow-up |
 | Frontend chat UX | Signed-in users already get the multi-conversation sidebar and authenticated API calls already send Clerk bearer tokens | No frontend UX gap for this follow-up |
-| Infrastructure | Clerk and SQLite runtime wiring are documented and connected across local/container/Kubernetes setups, and the backend auth docs/manifests now reflect the simplified no-authority/no-audience validation model | No remaining infrastructure gap for this feature plan |
+| Infrastructure | Clerk and SQLite runtime wiring are documented and connected across local/container/Kubernetes setups, and the backend auth docs/manifests now reflect the simplified no-authority/no-audience validation model | Remove JWKS URL and any now-unused HTTPS-metadata guidance so runtime/docs match the public-key-only backend model |
 
 ## Assumptions
 
@@ -241,3 +241,27 @@ The Phase 8 integration review confirmed that the simplified backend flow now va
 - Anonymous routes remain usable without auth.
 - Invalid or tampered bearer tokens fail predictably.
 - `README.md` and infrastructure docs/manifests reflect the simplified backend auth configuration.
+
+## Phase 9 — Clerk Public-Key-Only Validation ⏳ Pending
+
+Simplify the backend Clerk auth flow one step further so it uses only the explicit Clerk public verification key path and no longer exposes a backend JWKS URL configuration path.
+
+### Planned work
+
+- `salva`
+  - Remove the backend `Clerk__JwksUrl` configuration path and any now-unused JWKS-fetch helper code.
+  - Keep backend validation focused on the explicit Clerk public verification key, token signature, token lifetime, and extracting the user id from the validated token claims.
+  - Preserve anonymous routes when no bearer token is sent and keep invalid or tampered bearer tokens failing predictably.
+- `vicente`
+  - Update runtime/docs/config guidance so backend auth no longer documents or expects `Clerk__JwksUrl` or any now-unused HTTPS-metadata setting for this flow.
+  - Keep only the frontend publishable key and the backend public verification key inputs that remain relevant to the public-key-only validation model.
+- `danny`
+  - Run integration review after the backend and infra/doc updates land, verify the public-key-only backend auth configuration stays coherent with the frontend bearer-token flow, and then close the reopened plan if no issues remain.
+
+### Acceptance criteria for this phase
+
+- Backend no longer exposes or uses a JWKS URL configuration path for Clerk bearer-token validation.
+- Backend validates the bearer token using the explicit Clerk public verification key and extracts the current user id from the validated token.
+- Anonymous routes remain usable without auth.
+- Invalid or tampered bearer tokens fail predictably.
+- `README.md` and infrastructure docs/manifests reflect the public-key-only backend auth configuration.
