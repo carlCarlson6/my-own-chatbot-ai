@@ -54,7 +54,7 @@ Before starting implementation work, first inspect the current repo state and co
 5. Wire runtime configuration and secrets in infrastructure.
 6. Run cross-agent integration review and verification.
 
-## Phase 1 — Contract and Clerk Access Model Foundation ⏳ Pending
+## Phase 1 — Contract and Clerk Access Model Foundation ✅ Done
 
 Establish Clerk as the capability that unlocks saved multi-conversation features while preserving anonymous single-chat behavior.
 
@@ -73,7 +73,7 @@ Establish Clerk as the capability that unlocks saved multi-conversation features
   - Preserve the anonymous chat entry point.
   - Expose a clear sign-in CTA to unlock multi-conversation history and management.
   - Attach Clerk auth tokens to backend API calls when a user is signed in.
-- `vicente`
+- `vicente` ✅ Done
   - Document and wire the frontend publishable key and backend auth configuration into local/dev/deployment environments.
 
 ## Phase 2 — User-Owned Conversation Persistence ⏳ Pending

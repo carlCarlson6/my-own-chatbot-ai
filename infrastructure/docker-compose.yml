@@ -39,6 +39,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       Ollama__BaseUrl: http://ollama:11434
+      Clerk__Authority: ${CLERK__AUTHORITY:-}
+      Clerk__Audience: ${CLERK__AUDIENCE:-}
+      Clerk__RequireHttpsMetadata: ${CLERK__REQUIRE_HTTPS_METADATA:-true}
     depends_on:
       ollama:
         condition: service_healthy
@@ -59,6 +62,8 @@ services:
     restart: unless-stopped
     ports:
       - "3000:80"
+    environment:
+      CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY:-}
     depends_on:
       backend:
         condition: service_healthy

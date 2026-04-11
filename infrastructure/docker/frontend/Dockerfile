@@ -18,6 +18,9 @@ RUN rm /etc/nginx/conf.d/default.conf
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY infrastructure/docker/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY infrastructure/docker/frontend/40-write-app-config.sh /docker-entrypoint.d/40-write-app-config.sh
+
+RUN chmod +x /docker-entrypoint.d/40-write-app-config.sh
 
 EXPOSE 80
 

@@ -29,6 +29,11 @@ data:
             proxy_read_timeout 120s;
         }
 
+        location = /app-config.js {
+            add_header Cache-Control "no-store";
+            try_files $uri =404;
+        }
+
         location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$ {
             expires 1y;
             add_header Cache-Control "public, immutable";
@@ -36,6 +41,8 @@ data:
         }
 
         location / {
+            sub_filter_once on;
+            sub_filter '</head>' '<script src="/app-config.js"></script></head>';
             try_files $uri $uri/ /index.html;
         }
     }

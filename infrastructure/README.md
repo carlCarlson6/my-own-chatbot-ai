@@ -2,7 +2,7 @@
 
 This folder contains all infrastructure configuration for **my-own-chatbot-ai**.
 
-_Last updated: 2026-04-10_
+_Last updated: 2026-04-11_
 
 ---
 
@@ -30,6 +30,14 @@ _Last updated: 2026-04-10_
 ### Run everything with Docker Compose
 
 ```bash
+# Optional Clerk configuration for production-like containers
+export CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
+export CLERK__AUTHORITY=<your-clerk-jwt-authority>
+# Optional when your Clerk instance requires an audience claim
+export CLERK__AUDIENCE=<your-clerk-audience>
+# Only set false for local/non-HTTPS metadata endpoints
+export CLERK__REQUIRE_HTTPS_METADATA=true
+
 # 1. Build all images and start all services (production-like)
 cd infrastructure
 docker compose -f docker-compose.yml up --build
@@ -54,6 +62,13 @@ docker compose down
 ### Run with hot reload (local development)
 
 ```bash
+export VITE_CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
+export CLERK__AUTHORITY=<your-clerk-jwt-authority>
+# Optional for backend audience validation
+export CLERK__AUDIENCE=<your-clerk-audience>
+# Only set false when your Clerk metadata endpoint is not HTTPS
+export CLERK__REQUIRE_HTTPS_METADATA=true
+
 cd infrastructure
 docker compose up --build   # override file is merged automatically
 ```
@@ -69,11 +84,17 @@ docker compose up --build   # override file is merged automatically
 ```bash
 # Backend
 docker build -f infrastructure/docker/backend/Dockerfile -t chatbot-ai/backend .
-docker run --rm -p 5050:5050 chatbot-ai/backend
+docker run --rm -p 5050:5050 \
+  -e Clerk__Authority=<your-clerk-jwt-authority> \
+  -e Clerk__Audience=<your-clerk-audience> \
+  -e Clerk__RequireHttpsMetadata=true \
+  chatbot-ai/backend
 
 # Frontend
 docker build -f infrastructure/docker/frontend/Dockerfile -t chatbot-ai/frontend .
-docker run --rm -p 3000:80 chatbot-ai/frontend
+docker run --rm -p 3000:80 \
+  -e CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key> \
+  chatbot-ai/frontend
 
 # Ollama
 docker build -f infrastructure/docker/ollama/Dockerfile -t chatbot-ai/ollama .
@@ -85,6 +106,16 @@ docker run --rm -p 11434:11434 -v ollama_data:/root/.ollama chatbot-ai/ollama
 ```bash
 # Apply namespace first, then all manifests
 kubectl apply -f infrastructure/kubernetes/namespace.yaml
+
+# Optional Clerk runtime config. Apply your real values from CI/CD or cluster
+# management tooling; do not commit them to git-managed manifests.
+kubectl -n chatbot-ai create configmap clerk-config \
+  --from-literal=CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key> \
+  --from-literal=Clerk__Authority=<your-clerk-jwt-authority> \
+  --from-literal=Clerk__Audience=<your-clerk-audience> \
+  --from-literal=Clerk__RequireHttpsMetadata=true \
+  --dry-run=client -o yaml | kubectl apply -f -
+
 kubectl apply -R -f infrastructure/kubernetes/
 
 # Watch rollout
@@ -137,6 +168,7 @@ infrastructure/
 │   ├── frontend/
 │   │   ├── Dockerfile                 ← multi-stage node build → nginx serve
 │   │   ├── Dockerfile.dev             ← Vite dev server (used by override)
+│   │   ├── 40-write-app-config.sh     ← writes runtime Clerk config for nginx-served SPA
 │   │   └── nginx.conf                 ← nginx config: SPA fallback + API proxy
 │   └── ollama/
 │       ├── Dockerfile                 ← extends ollama/ollama with model pull script
@@ -196,6 +228,9 @@ docker build \
 
 docker run --rm -p 5050:5050 \
   -e ASPNETCORE_ENVIRONMENT=Development \
+  -e Clerk__Authority=<your-clerk-jwt-authority> \
+  -e Clerk__Audience=<your-clerk-audience> \
+  -e Clerk__RequireHttpsMetadata=true \
   chatbot-ai/backend
 ```
 
@@ -210,7 +245,9 @@ docker build \
   -t chatbot-ai/frontend \
   .
 
-docker run --rm -p 3000:80 chatbot-ai/frontend
+docker run --rm -p 3000:80 \
+  -e CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key> \
+  chatbot-ai/frontend
 ```
 
 Verify: open `http://localhost:3000` in a browser.
@@ -250,6 +287,12 @@ Verify: `curl http://localhost:11434/api/tags`
 ```bash
 cd infrastructure
 
+# Optional Clerk configuration for the nginx-served frontend and backend token validation
+export CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
+export CLERK__AUTHORITY=<your-clerk-jwt-authority>
+export CLERK__AUDIENCE=<your-clerk-audience>
+export CLERK__REQUIRE_HTTPS_METADATA=true
+
 # Build and start all services
 docker compose up --build
 
@@ -273,6 +316,11 @@ After startup:
 The `docker-compose.override.yml` file is automatically merged when you run `docker compose` from the `infrastructure/` directory. It replaces the nginx frontend with a Vite dev server and enables `dotnet watch` on the backend.
 
 ```bash
+export VITE_CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
+export CLERK__AUTHORITY=<your-clerk-jwt-authority>
+export CLERK__AUDIENCE=<your-clerk-audience>
+export CLERK__REQUIRE_HTTPS_METADATA=true
+
 cd infrastructure
 docker compose up --build
 ```
@@ -300,6 +348,14 @@ All manifests live in `infrastructure/kubernetes/` and target the `chatbot-ai` n
 ```bash
 # Create namespace first
 kubectl apply -f infrastructure/kubernetes/namespace.yaml
+
+# Optional Clerk runtime config shared by backend and frontend
+kubectl -n chatbot-ai create configmap clerk-config \
+  --from-literal=CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key> \
+  --from-literal=Clerk__Authority=<your-clerk-jwt-authority> \
+  --from-literal=Clerk__Audience=<your-clerk-audience> \
+  --from-literal=Clerk__RequireHttpsMetadata=true \
+  --dry-run=client -o yaml | kubectl apply -f -
 
 # Apply all resources (backend, frontend, ollama)
 kubectl apply -R -f infrastructure/kubernetes/
@@ -362,6 +418,16 @@ kubectl delete -R -f infrastructure/kubernetes/
 | `ASPNETCORE_ENVIRONMENT`  | `Production`          | `Development` or `Production`      |
 | `ASPNETCORE_URLS`         | `http://+:5050`       | Kestrel listen address             |
 | `Ollama__BaseUrl`         | `http://ollama:11434` | Ollama service URL                 |
+| `Clerk__Authority`        | _unset_               | Clerk JWT authority / issuer URL   |
+| `Clerk__Audience`         | _unset_               | Optional Clerk audience validation |
+| `Clerk__RequireHttpsMetadata` | `true`           | Allow non-HTTPS metadata only for local/dev |
+
+### Frontend
+
+| Variable                       | Default | Description |
+|--------------------------------|---------|-------------|
+| `CLERK_PUBLISHABLE_KEY`        | _unset_ | Runtime Clerk publishable key for the nginx-served frontend |
+| `VITE_CLERK_PUBLISHABLE_KEY`   | _unset_ | Clerk publishable key exposed to the Vite dev server |
 
 ### Ollama (Docker only)
 
@@ -378,6 +444,8 @@ kubectl delete -R -f infrastructure/kubernetes/
 
 Docker Compose creates a default bridge network named `chatbot-ai_default`. Services reference each other by service name (e.g. `backend` → `http://backend:5050`, `ollama` → `http://ollama:11434`).
 
+The production-like frontend image writes `/app-config.js` from `CLERK_PUBLISHABLE_KEY` at container startup and nginx injects that script into `index.html`, so you can change Clerk environments without rebuilding the SPA image.
+
 ### Kubernetes
 
 All services are in the `chatbot-ai` namespace. DNS resolution follows the pattern:
@@ -389,6 +457,8 @@ All services are in the `chatbot-ai` namespace. DNS resolution follows the patte
 ```
 
 Example: `http://ollama:11434` in the backend configmap resolves to `ollama.chatbot-ai.svc.cluster.local:11434`.
+
+When Clerk is enabled in Kubernetes, both the backend and frontend deployments optionally read keys from a namespace-local `clerk-config` ConfigMap. Populate that object from your deployment pipeline or cluster tooling instead of committing real values to the repo.
 
 ---
 
