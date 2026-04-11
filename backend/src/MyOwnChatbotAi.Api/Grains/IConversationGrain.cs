@@ -8,5 +8,9 @@ public interface IConversationGrain : IGrainWithGuidKey
 
     Task<SendMessageResponse?> SendMessageAsync(string? ownerUserId, ChatMessageInput message, bool createIfMissing);
 
-    Task<GetConversationHistoryResponse?> GetHistoryAsync(string? ownerUserId);
+    Task<ConversationHistoryOperationResult> GetHistoryAsync(string? ownerUserId);
+
+    Task<RenameConversationOperationResult> RenameAsync(string ownerUserId, string title);
+
+    Task<DeleteConversationOperationResult> DeleteAsync(string ownerUserId);
 }

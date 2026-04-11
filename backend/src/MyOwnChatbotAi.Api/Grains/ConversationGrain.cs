@@ -182,27 +182,85 @@ public sealed class ConversationGrain : Grain, IConversationGrain
             conversationId,
             userMessage,
             assistantMessage,
+            CreateConversationSummary(conversationId),
             _state.State.Model,
             "completed",
             latencyMs);
     }
 
-    public async Task<GetConversationHistoryResponse?> GetHistoryAsync(string? ownerUserId)
+    public async Task<ConversationHistoryOperationResult> GetHistoryAsync(string? ownerUserId)
     {
         var conversationId = this.GetPrimaryKey();
+        var accessOutcome = await EnsureHistoryAccessAsync(ownerUserId);
 
-        if (!await EnsureConversationLoadedAsync(ownerUserId))
+        if (accessOutcome is not ConversationAccessOutcome.Success)
         {
-            _logger.LogDebug("GetHistory requested for uninitialized conversation {ConversationId}", conversationId);
-            return null;
+            _logger.LogDebug(
+                "GetHistory rejected for conversation {ConversationId} with outcome {Outcome}",
+                conversationId,
+                accessOutcome);
+            return new ConversationHistoryOperationResult(accessOutcome, null);
         }
 
-        return new GetConversationHistoryResponse(
+        return new ConversationHistoryOperationResult(
+            ConversationAccessOutcome.Success,
+            CreateHistoryResponse(conversationId));
+    }
+
+    public async Task<RenameConversationOperationResult> RenameAsync(string ownerUserId, string title)
+    {
+        var conversationId = this.GetPrimaryKey();
+        var accessOutcome = await EnsureManagedConversationAccessAsync(ownerUserId);
+        if (accessOutcome is not ConversationAccessOutcome.Success)
+        {
+            _logger.LogDebug(
+                "Rename rejected for conversation {ConversationId} and user '{OwnerUserId}' with outcome {Outcome}",
+                conversationId,
+                ownerUserId,
+                accessOutcome);
+            return new RenameConversationOperationResult(accessOutcome, null);
+        }
+
+        var normalizedTitle = title.Trim();
+        var updatedAtUtc = DateTime.UtcNow;
+
+        _state.State.Title = normalizedTitle;
+        _state.State.HasManualTitle = true;
+        _state.State.UpdatedAtUtc = updatedAtUtc;
+
+        await _conversationStore.RenameConversationAsync(
             conversationId,
-            _state.State.Title,
-            _state.State.Model,
-            "active",
-            _state.State.Messages.AsReadOnly());
+            ownerUserId,
+            normalizedTitle,
+            updatedAtUtc);
+
+        await _state.WriteStateAsync();
+
+        return new RenameConversationOperationResult(
+            ConversationAccessOutcome.Success,
+            CreateConversationSummary(conversationId));
+    }
+
+    public async Task<DeleteConversationOperationResult> DeleteAsync(string ownerUserId)
+    {
+        var conversationId = this.GetPrimaryKey();
+        var accessOutcome = await EnsureManagedConversationAccessAsync(ownerUserId);
+        if (accessOutcome is not ConversationAccessOutcome.Success)
+        {
+            _logger.LogDebug(
+                "Delete rejected for conversation {ConversationId} and user '{OwnerUserId}' with outcome {Outcome}",
+                conversationId,
+                ownerUserId,
+                accessOutcome);
+            return new DeleteConversationOperationResult(accessOutcome);
+        }
+
+        await _conversationStore.DeleteConversationAsync(conversationId, ownerUserId);
+        ResetState();
+        await _state.ClearStateAsync();
+        DeactivateOnIdle();
+
+        return new DeleteConversationOperationResult(ConversationAccessOutcome.Success);
     }
 
     private async Task<bool> EnsureConversationLoadedAsync(string? ownerUserId)
@@ -234,6 +292,55 @@ public sealed class ConversationGrain : Grain, IConversationGrain
         return true;
     }
 
+    private async Task<ConversationAccessOutcome> EnsureHistoryAccessAsync(string? ownerUserId)
+    {
+        if (_state.State.IsInitialized)
+        {
+            return EvaluateHistoryAccess(ownerUserId);
+        }
+
+        var conversationId = this.GetPrimaryKey();
+        if (string.IsNullOrWhiteSpace(ownerUserId))
+        {
+            return await _conversationStore.ExistsAsync(conversationId)
+                ? ConversationAccessOutcome.AuthenticationRequired
+                : ConversationAccessOutcome.NotFound;
+        }
+
+        var persistedConversation = await _conversationStore.GetHistoryAsync(conversationId, ownerUserId);
+        if (persistedConversation is not null)
+        {
+            HydrateFromPersistedConversation(persistedConversation);
+            await _state.WriteStateAsync();
+            return ConversationAccessOutcome.Success;
+        }
+
+        return await _conversationStore.ExistsAsync(conversationId)
+            ? ConversationAccessOutcome.Forbidden
+            : ConversationAccessOutcome.NotFound;
+    }
+
+    private async Task<ConversationAccessOutcome> EnsureManagedConversationAccessAsync(string ownerUserId)
+    {
+        if (_state.State.IsInitialized)
+        {
+            return EvaluateManagedConversationAccess(ownerUserId);
+        }
+
+        var conversationId = this.GetPrimaryKey();
+        var persistedConversation = await _conversationStore.GetHistoryAsync(conversationId, ownerUserId);
+        if (persistedConversation is not null)
+        {
+            HydrateFromPersistedConversation(persistedConversation);
+            await _state.WriteStateAsync();
+            return ConversationAccessOutcome.Success;
+        }
+
+        return await _conversationStore.ExistsAsync(conversationId)
+            ? ConversationAccessOutcome.Forbidden
+            : ConversationAccessOutcome.NotFound;
+    }
+
     private bool HasAccess(string? ownerUserId)
     {
         if (!_state.State.IsInitialized)
@@ -247,6 +354,37 @@ public sealed class ConversationGrain : Grain, IConversationGrain
         }
 
         return string.Equals(_state.State.OwnerUserId, ownerUserId, StringComparison.Ordinal);
+    }
+
+    private ConversationAccessOutcome EvaluateHistoryAccess(string? ownerUserId)
+    {
+        if (!_state.State.IsManagedConversation)
+        {
+            return string.IsNullOrWhiteSpace(ownerUserId)
+                ? ConversationAccessOutcome.Success
+                : ConversationAccessOutcome.NotFound;
+        }
+
+        if (string.IsNullOrWhiteSpace(ownerUserId))
+        {
+            return ConversationAccessOutcome.AuthenticationRequired;
+        }
+
+        return string.Equals(_state.State.OwnerUserId, ownerUserId, StringComparison.Ordinal)
+            ? ConversationAccessOutcome.Success
+            : ConversationAccessOutcome.Forbidden;
+    }
+
+    private ConversationAccessOutcome EvaluateManagedConversationAccess(string ownerUserId)
+    {
+        if (!_state.State.IsManagedConversation)
+        {
+            return ConversationAccessOutcome.NotFound;
+        }
+
+        return string.Equals(_state.State.OwnerUserId, ownerUserId, StringComparison.Ordinal)
+            ? ConversationAccessOutcome.Success
+            : ConversationAccessOutcome.Forbidden;
     }
 
     private void ApplyDefaultTitleFromFirstUserMessage(ChatMessage userMessage)
@@ -301,11 +439,34 @@ public sealed class ConversationGrain : Grain, IConversationGrain
     private static StoredConversationMessage ToStoredMessage(ChatMessage message) =>
         new(message.MessageId, message.Role, message.Content, message.CreatedAtUtc, 0);
 
+    private GetConversationHistoryResponse CreateHistoryResponse(Guid conversationId) =>
+        new(
+            conversationId,
+            _state.State.Title,
+            _state.State.HasManualTitle,
+            _state.State.Model,
+            _state.State.CreatedAtUtc,
+            _state.State.UpdatedAtUtc,
+            "active",
+            _state.State.Messages.AsReadOnly());
+
+    private ConversationSummary CreateConversationSummary(Guid conversationId) =>
+        new(
+            conversationId,
+            _state.State.Title,
+            _state.State.HasManualTitle,
+            _state.State.Model,
+            _state.State.CreatedAtUtc,
+            _state.State.UpdatedAtUtc,
+            "active");
+
     private CreateConversationResponse CreateConversationResponse(Guid conversationId) =>
         new(
             conversationId,
             _state.State.Title,
+            _state.State.HasManualTitle,
             _state.State.Model,
             _state.State.CreatedAtUtc,
+            _state.State.UpdatedAtUtc,
             "active");
 }

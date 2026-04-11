@@ -98,7 +98,7 @@ Use a lightweight **SQLite-backed durable store** for authenticated conversation
 - `vicente` ✅ Done
   - Wired the backend SQLite database path to durable Docker Compose and Kubernetes storage, added backend PVC/volume mounts, and documented the runtime/storage expectations for the new persistence dependency.
 
-## Phase 3 — Conversation Management API Surface ⏳ Pending
+## Phase 3 — Conversation Management API Surface ✅ Done
 
 Add the backend contract and endpoints required to browse, rename, delete, and reopen saved conversations for authenticated users.
 
@@ -109,7 +109,7 @@ Add the backend contract and endpoints required to browse, rename, delete, and r
   - Add `PATCH /api/conversations/{conversationId}` for renaming.
   - Add `DELETE /api/conversations/{conversationId}` for deletion.
   - Update existing create/send/history schemas if they must carry additional summary metadata or clarify anonymous-vs-authenticated behavior.
-- `salva`
+- `salva` ✅ Done
   - Implement the new endpoints in feature slices under `backend/src/MyOwnChatbotAi.Api/Features/Conversations/`.
   - Keep saved-conversation history owner-aware and auth-protected while preserving the anonymous single-chat history path if it remains part of the existing flow.
   - Return consistent `404`, `401`, and `403` behavior for unknown, unauthenticated, and unauthorized access on protected routes.

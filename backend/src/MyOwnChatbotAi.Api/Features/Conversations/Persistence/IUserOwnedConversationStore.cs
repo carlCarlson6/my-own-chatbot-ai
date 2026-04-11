@@ -6,6 +6,10 @@ public interface IUserOwnedConversationStore
 
     Task<bool> ExistsAsync(Guid conversationId, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<UserOwnedConversationSummary>> ListAsync(
+        string ownerUserId,
+        CancellationToken cancellationToken = default);
+
     Task<UserOwnedConversationHistory?> GetHistoryAsync(
         Guid conversationId,
         string ownerUserId,
@@ -22,5 +26,17 @@ public interface IUserOwnedConversationStore
         bool hasManualTitle,
         DateTime updatedAtUtc,
         IReadOnlyList<StoredConversationMessage> messages,
+        CancellationToken cancellationToken = default);
+
+    Task RenameConversationAsync(
+        Guid conversationId,
+        string ownerUserId,
+        string title,
+        DateTime updatedAtUtc,
+        CancellationToken cancellationToken = default);
+
+    Task DeleteConversationAsync(
+        Guid conversationId,
+        string ownerUserId,
         CancellationToken cancellationToken = default);
 }

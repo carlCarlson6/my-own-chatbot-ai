@@ -61,6 +61,31 @@ public sealed class SqliteUserOwnedConversationStore(
         return await command.ExecuteScalarAsync(cancellationToken) is not null;
     }
 
+    public async Task<IReadOnlyList<UserOwnedConversationSummary>> ListAsync(
+        string ownerUserId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT conversation_id, owner_user_id, title, has_manual_title, model, status, created_at_utc, updated_at_utc
+            FROM conversations
+            WHERE owner_user_id = $ownerUserId
+            ORDER BY updated_at_utc DESC, created_at_utc DESC;
+            """;
+        command.Parameters.AddWithValue("$ownerUserId", ownerUserId);
+
+        var conversations = new List<UserOwnedConversationSummary>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            conversations.Add(ReadSummary(reader));
+        }
+
+        return conversations;
+    }
+
     public async Task<UserOwnedConversationHistory?> GetHistoryAsync(
         Guid conversationId,
         string ownerUserId,
@@ -85,15 +110,7 @@ public sealed class SqliteUserOwnedConversationStore(
             return null;
         }
 
-        var summary = new UserOwnedConversationSummary(
-            ParseGuid(summaryReader, 0),
-            summaryReader.GetString(1),
-            summaryReader.GetString(2),
-            summaryReader.GetBoolean(3),
-            summaryReader.GetString(4),
-            ParseDateTime(summaryReader, 6),
-            ParseDateTime(summaryReader, 7),
-            summaryReader.GetString(5));
+        var summary = ReadSummary(summaryReader);
 
         await summaryReader.DisposeAsync();
 
@@ -228,6 +245,61 @@ public sealed class SqliteUserOwnedConversationStore(
         await transaction.CommitAsync(cancellationToken);
     }
 
+    public async Task RenameConversationAsync(
+        Guid conversationId,
+        string ownerUserId,
+        string title,
+        DateTime updatedAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            UPDATE conversations
+            SET title = $title,
+                has_manual_title = 1,
+                updated_at_utc = $updatedAtUtc
+            WHERE conversation_id = $conversationId
+              AND owner_user_id = $ownerUserId;
+            """;
+        command.Parameters.AddWithValue("$conversationId", conversationId.ToString());
+        command.Parameters.AddWithValue("$ownerUserId", ownerUserId);
+        command.Parameters.AddWithValue("$title", title);
+        command.Parameters.AddWithValue("$updatedAtUtc", FormatDateTime(updatedAtUtc));
+
+        var rowsUpdated = await command.ExecuteNonQueryAsync(cancellationToken);
+        if (rowsUpdated == 0)
+        {
+            throw new InvalidOperationException(
+                $"Conversation '{conversationId}' was not found for user '{ownerUserId}'.");
+        }
+    }
+
+    public async Task DeleteConversationAsync(
+        Guid conversationId,
+        string ownerUserId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            DELETE FROM conversations
+            WHERE conversation_id = $conversationId
+              AND owner_user_id = $ownerUserId;
+            """;
+        command.Parameters.AddWithValue("$conversationId", conversationId.ToString());
+        command.Parameters.AddWithValue("$ownerUserId", ownerUserId);
+
+        var rowsDeleted = await command.ExecuteNonQueryAsync(cancellationToken);
+        if (rowsDeleted == 0)
+        {
+            throw new InvalidOperationException(
+                $"Conversation '{conversationId}' was not found for user '{ownerUserId}'.");
+        }
+    }
+
     private static async Task<int> GetNextSequenceAsync(
         SqliteConnection connection,
         System.Data.Common.DbTransaction transaction,
@@ -282,6 +354,17 @@ public sealed class SqliteUserOwnedConversationStore(
                 $"Conversation '{conversationId}' was not found for user '{ownerUserId}'.");
         }
     }
+
+    private static UserOwnedConversationSummary ReadSummary(SqliteDataReader reader) =>
+        new(
+            ParseGuid(reader, 0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.GetBoolean(3),
+            reader.GetString(4),
+            ParseDateTime(reader, 6),
+            ParseDateTime(reader, 7),
+            reader.GetString(5));
 
     private static Guid ParseGuid(SqliteDataReader reader, int ordinal) =>
         Guid.Parse(reader.GetString(ordinal));

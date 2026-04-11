@@ -7,6 +7,9 @@ public static class ConversationEndpointExtensions
         var group = app.MapGroup("/api/conversations").WithTags("Conversations");
 
         group.MapCreateConversationEndpoint();
+        group.MapListConversationsEndpoint();
+        group.MapRenameConversationEndpoint();
+        group.MapDeleteConversationEndpoint();
         group.MapSendMessageEndpoint();
         group.MapGetConversationHistoryEndpoint();
 
