@@ -21,7 +21,7 @@ Before starting implementation work, first inspect the current repo state and co
 | Area | Current state | Gap for this feature |
 |---|---|---|
 | Authentication | No auth in frontend or backend | Clerk integration is required for saved, user-owned multi-conversation features, while anonymous single-chat access should remain available |
-| API contract | Explicitly excludes auth, persistence, and multi-user features | Contract must be expanded before implementation |
+| API contract | Declares Clerk bearer auth for future protected routes and marks create/send/history as anonymous-capable | Protected conversation-management endpoints and user-scoped response shapes are still missing |
 | Backend conversation model | Orleans `ConversationGrain` stores one conversation per grain with in-memory grain storage and no user ownership | User scoping, listing, rename/delete flows, and durable storage strategy are missing |
 | Frontend chat UX | Single active conversation in `chatStore.ts`, no sidebar, no auth gate | Needs multi-conversation state, sidebar UI, and auth-aware API calls |
 | Infrastructure | App stack exists for frontend/backend/Ollama only | Clerk env vars/secrets and any persistence dependency must be wired into infra/docs |
@@ -60,7 +60,7 @@ Establish Clerk as the capability that unlocks saved multi-conversation features
 
 ### Planned work
 
-- `contract-updater`
+- `contract-updater` ✅ Done
   - Add an auth scheme to `contracts/chatbot-api.openapi.yml` for protected conversation-management endpoints.
   - Document which routes remain anonymous-capable (`create`, `send`, active history flow) and which require sign-in (`list`, `rename`, `delete`, saved multi-conversation retrieval).
   - Add `401` / `403` responses where authenticated access is required.

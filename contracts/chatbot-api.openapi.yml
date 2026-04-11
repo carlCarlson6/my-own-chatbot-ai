@@ -3,13 +3,19 @@ info:
   title: My Own Chatbot AI API
   version: 0.1.0
   description: |
-    Initial MVP API contract for the local-first chatbot application.
+    Initial chatbot API contract for the local-first chatbot application.
 
     This contract is the source of truth for the first scaffold and keeps the
     .NET + Orleans backend aligned with the React + Zod frontend.
 
-    Scope intentionally excluded from this first version:
-    - authentication and authorization
+    Access model for the current multi-conversation rollout:
+    - anonymous clients may still create a conversation, send messages, and load
+      the active conversation history for the single-chat flow
+    - authenticated Clerk clients unlock saved, user-owned conversation
+      management such as list, rename, delete, and reopening prior
+      conversations
+
+    Scope intentionally excluded from this version:
     - token streaming responses
     - persistence/database storage
     - multi-user collaboration features
@@ -24,7 +30,16 @@ paths:
     post:
       tags: [Conversations]
       summary: Create a new conversation
+      description: |
+        Anonymous-capable route for bootstrapping the current single-chat flow.
+
+        Clients may call this endpoint without a bearer token. Authenticated
+        Clerk sessions may also call it so later phases can associate the
+        conversation with the signed-in user.
       operationId: createConversation
+      security:
+        - {}
+        - clerkBearerAuth: []
       requestBody:
         required: false
         content:
@@ -53,7 +68,16 @@ paths:
     post:
       tags: [Conversations]
       summary: Send a user message and receive an assistant reply
+      description: |
+        Anonymous-capable route for the active chat flow.
+
+        Clients may call this endpoint without a bearer token. When a Clerk
+        bearer token is present, later phases may use it to associate the active
+        conversation with the signed-in user without changing the request shape.
       operationId: sendMessage
+      security:
+        - {}
+        - clerkBearerAuth: []
       requestBody:
         required: true
         content:
@@ -100,7 +124,19 @@ paths:
     get:
       tags: [Conversations]
       summary: Get the full ordered history for a conversation
+      description: |
+        Anonymous-capable route for loading the active conversation history in
+        the current single-chat flow.
+
+        Reopening a saved, user-owned conversation will require a Clerk bearer
+        token once conversation persistence and management endpoints are added.
+        Those protected routes will return `401` when authentication is missing
+        or invalid and `403` when the signed-in user does not own the
+        conversation.
       operationId: getConversationHistory
+      security:
+        - {}
+        - clerkBearerAuth: []
       parameters:
         - name: conversationId
           in: path
@@ -130,6 +166,37 @@ paths:
                 $ref: '#/components/schemas/ApiError'
 
 components:
+  securitySchemes:
+    clerkBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Clerk-issued bearer token used for authenticated, user-scoped
+        conversation management endpoints.
+  responses:
+    UnauthorizedError:
+      description: Missing, expired, or invalid Clerk bearer token.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          examples:
+            missingAuth:
+              value:
+                code: authentication_required
+                message: Sign-in is required for this operation.
+    ForbiddenError:
+      description: Authenticated user is not allowed to access the requested conversation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          examples:
+            wrongOwner:
+              value:
+                code: forbidden
+                message: You do not have access to this conversation.
   schemas:
     CreateConversationRequest:
       type: object
