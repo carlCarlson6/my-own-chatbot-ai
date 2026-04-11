@@ -76,7 +76,7 @@ Establish Clerk as the capability that unlocks saved multi-conversation features
 - `vicente` ✅ Done
   - Document and wire the frontend publishable key and backend auth configuration into local/dev/deployment environments.
 
-## Phase 2 — User-Owned Conversation Persistence ⏳ Pending
+## Phase 2 — User-Owned Conversation Persistence ✅ Done
 
 Add a user-scoped conversation store for authenticated users while leaving the anonymous single-chat path lightweight and non-persistent.
 
@@ -95,8 +95,8 @@ Use a lightweight **SQLite-backed durable store** for authenticated conversation
 - `ivan` ✅ Done
   - Confirmed that persisted ordered history is rehydrated into `ConversationGrain` and then forwarded as the full `OllamaMessage[]` input, so reopening a saved conversation preserves the Ollama chat context expected by the current backend flow.
   - Review note: there is currently no truncation, summarization, or context-budget guardrail. If authenticated histories grow large, SQLite reload cost, request payload size, Ollama latency, and timeout/context-window pressure will all grow linearly and should be addressed in a later AI/runtime pass.
-- `vicente`
-  - If a new persistence dependency is introduced, add the required container/Kubernetes/env wiring and document it.
+- `vicente` ✅ Done
+  - Wired the backend SQLite database path to durable Docker Compose and Kubernetes storage, added backend PVC/volume mounts, and documented the runtime/storage expectations for the new persistence dependency.
 
 ## Phase 3 — Conversation Management API Surface ⏳ Pending
 

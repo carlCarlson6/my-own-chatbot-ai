@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-conversations-pvc
+  namespace: chatbot-ai
+  labels:
+    app: backend
+    project: my-own-chatbot-ai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # SQLite conversation data is lightweight; increase this if you expect
+      # large retained histories or attach additional backend-owned artifacts.
+      storage: 1Gi
+  # Remove storageClassName to use the cluster default.
+  # Set explicitly for cloud providers: gp2 (AWS), standard (GKE), managed-csi (AKS).
+  # storageClassName: standard

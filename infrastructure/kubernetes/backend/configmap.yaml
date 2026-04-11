@@ -10,3 +10,4 @@ data:
   ASPNETCORE_ENVIRONMENT: "Production"
   ASPNETCORE_URLS: "http://+:5050"
   Ollama__BaseUrl: "http://ollama:11434"
+  ConversationPersistence__DatabasePath: "/app/App_Data/conversations.sqlite"

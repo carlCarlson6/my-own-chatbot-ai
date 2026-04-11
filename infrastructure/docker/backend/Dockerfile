@@ -17,11 +17,15 @@ RUN dotnet publish MyOwnChatbotAi.Api/MyOwnChatbotAi.Api.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# Create a non-root user for security
-RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
-USER appuser
+# Create a stable non-root user and writable app data directory for SQLite
+RUN addgroup --system --gid 10001 appgroup \
+    && adduser --system --uid 10001 --ingroup appgroup appuser \
+    && mkdir -p /app/App_Data \
+    && chown -R appuser:appgroup /app
 
 COPY --from=build --chown=appuser:appgroup /app/publish .
+
+USER appuser
 
 ENV ASPNETCORE_URLS=http://+:5050
 ENV ASPNETCORE_ENVIRONMENT=Production

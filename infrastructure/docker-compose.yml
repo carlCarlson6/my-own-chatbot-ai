@@ -39,9 +39,12 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       Ollama__BaseUrl: http://ollama:11434
+      ConversationPersistence__DatabasePath: /app/App_Data/conversations.sqlite
       Clerk__Authority: ${CLERK__AUTHORITY:-}
       Clerk__Audience: ${CLERK__AUDIENCE:-}
       Clerk__RequireHttpsMetadata: ${CLERK__REQUIRE_HTTPS_METADATA:-true}
+    volumes:
+      - backend_data:/app/App_Data
     depends_on:
       ollama:
         condition: service_healthy
@@ -69,5 +72,7 @@ services:
         condition: service_healthy
 
 volumes:
+  backend_data:
+    name: chatbot-backend-data
   ollama_data:
     name: chatbot-ollama-data

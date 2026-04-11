@@ -53,6 +53,8 @@ docker compose logs -f
 docker compose down
 ```
 
+The backend stores authenticated users' saved conversations in SQLite at `/app/App_Data/conversations.sqlite` inside the container. Docker Compose persists that path through the named volume `chatbot-backend-data`.
+
 | Service  | URL                           |
 |----------|-------------------------------|
 | Frontend | http://localhost:3000         |
@@ -85,9 +87,11 @@ docker compose up --build   # override file is merged automatically
 # Backend
 docker build -f infrastructure/docker/backend/Dockerfile -t chatbot-ai/backend .
 docker run --rm -p 5050:5050 \
+  -e ConversationPersistence__DatabasePath=/app/App_Data/conversations.sqlite \
   -e Clerk__Authority=<your-clerk-jwt-authority> \
   -e Clerk__Audience=<your-clerk-audience> \
   -e Clerk__RequireHttpsMetadata=true \
+  -v chatbot-backend-data:/app/App_Data \
   chatbot-ai/backend
 
 # Frontend
@@ -178,6 +182,7 @@ infrastructure/
     ├── backend/
     │   ├── configmap.yaml             ← env vars (ASPNETCORE_ENVIRONMENT, Ollama__BaseUrl)
     │   ├── deployment.yaml            ← backend Deployment
+    │   ├── persistentvolumeclaim.yaml ← 1 Gi PVC for SQLite conversation storage
     │   └── service.yaml               ← ClusterIP service on port 5050
     ├── frontend/
     │   ├── configmap.yaml             ← nginx.conf injected as a ConfigMap
@@ -228,9 +233,11 @@ docker build \
 
 docker run --rm -p 5050:5050 \
   -e ASPNETCORE_ENVIRONMENT=Development \
+  -e ConversationPersistence__DatabasePath=/app/App_Data/conversations.sqlite \
   -e Clerk__Authority=<your-clerk-jwt-authority> \
   -e Clerk__Audience=<your-clerk-audience> \
   -e Clerk__RequireHttpsMetadata=true \
+  -v chatbot-backend-data:/app/App_Data \
   chatbot-ai/backend
 ```
 
@@ -418,6 +425,7 @@ kubectl delete -R -f infrastructure/kubernetes/
 | `ASPNETCORE_ENVIRONMENT`  | `Production`          | `Development` or `Production`      |
 | `ASPNETCORE_URLS`         | `http://+:5050`       | Kestrel listen address             |
 | `Ollama__BaseUrl`         | `http://ollama:11434` | Ollama service URL                 |
+| `ConversationPersistence__DatabasePath` | `/app/App_Data/conversations.sqlite` | Absolute SQLite file path for durable saved conversations |
 | `Clerk__Authority`        | _unset_               | Clerk JWT authority / issuer URL   |
 | `Clerk__Audience`         | _unset_               | Optional Clerk audience validation |
 | `Clerk__RequireHttpsMetadata` | `true`           | Allow non-HTTPS metadata only for local/dev |
@@ -463,6 +471,20 @@ When Clerk is enabled in Kubernetes, both the backend and frontend deployments o
 ---
 
 ## Storage
+
+### Backend conversation persistence (SQLite)
+
+Authenticated multi-conversation history is stored in SQLite. The backend is configured to use:
+
+- **Container path**: `/app/App_Data/conversations.sqlite`
+- **Docker Compose**: named volume `chatbot-backend-data` mounted at `/app/App_Data`
+- **Kubernetes**: `PersistentVolumeClaim` `backend-conversations-pvc` mounted at `/app/App_Data`
+
+Because the SQLite database lives on a single `ReadWriteOnce` volume, the Kubernetes backend deployment stays at **1 replica** and uses the **`Recreate`** rollout strategy to avoid two pods trying to mount or write the same database volume during an update.
+
+SQLite is a file-backed local dependency only. Do **not** treat it as a secret and do **not** add credentials for it; only the durable file path and volume mount need to be configured.
+
+### Ollama model storage
 
 Ollama stores downloaded model weights in `/root/.ollama`. This is backed by:
 
