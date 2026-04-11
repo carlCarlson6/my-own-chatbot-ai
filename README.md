@@ -132,7 +132,7 @@ Configure `Clerk__JwtVerificationPublicKey` so the backend can validate Clerk be
 
 Plans that have been fully executed and are kept for historical reference.
 
-- [`docs/plans/clerk-auth-multi-conversation-plan.md`](docs/plans/clerk-auth-multi-conversation-plan.md) — Clerk-enabled multi-conversation feature: anonymous single chat, authenticated saved conversations, SQLite persistence, sidebar UX, rename/delete, Clerk JWT validation correction, simplified token-validation flow, and final public-key-only backend auth model. All 9 phases ✅ done.
+- [`docs/plans/old/clerk-auth-multi-conversation-plan.md`](docs/plans/old/clerk-auth-multi-conversation-plan.md) — Clerk-enabled multi-conversation feature: anonymous single chat, authenticated saved conversations, SQLite persistence, sidebar UX, rename/delete, Clerk JWT validation correction, simplified token-validation flow, and final public-key-only backend auth model. All 9 phases ✅ done.
 - [`docs/plans/old/frontend-chat-ui-plan.md`](docs/plans/old/frontend-chat-ui-plan.md) — Frontend chat UI: API client (native fetch + Zod), Zustand store, 6 React components, end-to-end wiring, and UX polish. All 5 phases ✅ done.
 - [`docs/plans/old/backend-ollama-communication-plan.md`](docs/plans/old/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: all 5 phases ✅ done.
 - [`docs/plans/old/scaffolding-plan.md`](docs/plans/old/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration. All 6 steps complete; frontend wiring tracked in `docs/plans/frontend-chat-ui-plan.md`.

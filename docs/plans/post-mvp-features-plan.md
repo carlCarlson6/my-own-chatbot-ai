@@ -10,7 +10,7 @@ Realign the post-MVP roadmap to the current repo reality and keep it ready for D
 2. conversation history budget / truncation guardrails for long saved chats
 3. test infrastructure for backend and frontend maintainability
 
-The old sidebar work is no longer part of this plan because the signed-in multi-conversation experience already shipped under [`docs/plans/clerk-auth-multi-conversation-plan.md`](clerk-auth-multi-conversation-plan.md).
+The old sidebar work is no longer part of this plan because the signed-in multi-conversation experience already shipped under [`docs/plans/old/clerk-auth-multi-conversation-plan.md`](old/clerk-auth-multi-conversation-plan.md).
 
 ## Pre-Implementation Change Review
 
