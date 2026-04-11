@@ -38,18 +38,6 @@ spec:
             - configMapRef:
                 name: backend-config
           env:
-            - name: Clerk__Authority
-              valueFrom:
-                configMapKeyRef:
-                  name: clerk-config
-                  key: Clerk__Authority
-                  optional: true
-            - name: Clerk__Audience
-              valueFrom:
-                configMapKeyRef:
-                  name: clerk-config
-                  key: Clerk__Audience
-                  optional: true
             - name: Clerk__JwksUrl
               valueFrom:
                 configMapKeyRef:

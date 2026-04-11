@@ -39,15 +39,12 @@ _Last updated: 2026-04-11_
 # Optional Clerk configuration for production-like containers
 # Only variable names are documented here. Do not commit Clerk secrets or real values.
 export CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
-export CLERK__AUTHORITY=<your-clerk-jwt-authority>
-# Optional when your Clerk instance requires an audience claim
-export CLERK__AUDIENCE=<your-clerk-audience>
-# Optional explicit JWKS endpoint. If unset, the backend derives
-# /.well-known/jwks.json from CLERK__AUTHORITY.
+# Configure one backend Clerk verification input when authenticated
+# saved conversations are enabled. Choose JWKS URL or public key.
 export CLERK__JWKS_URL=<your-clerk-jwks-url>
-# Optional alternative to JWKS discovery: Clerk public verification key.
+# Optional alternative to JWKS fetch: Clerk public verification key.
 export CLERK__JWT_VERIFICATION_PUBLIC_KEY=<your-clerk-jwt-verification-public-key>
-# Only set false for local/non-HTTPS metadata endpoints
+# Only set false for local/non-HTTPS JWKS endpoints
 export CLERK__REQUIRE_HTTPS_METADATA=true
 
 # 1. Build all images and start all services (production-like)
@@ -77,15 +74,12 @@ The backend stores authenticated users' saved conversations in SQLite at `/app/A
 
 ```bash
 export VITE_CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
-export CLERK__AUTHORITY=<your-clerk-jwt-authority>
-# Optional for backend audience validation
-export CLERK__AUDIENCE=<your-clerk-audience>
-# Optional explicit JWKS endpoint. If unset, the backend derives
-# /.well-known/jwks.json from CLERK__AUTHORITY.
+# Configure one backend Clerk verification input when authenticated
+# saved conversations are enabled. Choose JWKS URL or public key.
 export CLERK__JWKS_URL=<your-clerk-jwks-url>
-# Optional alternative to JWKS discovery: Clerk public verification key.
+# Optional alternative to JWKS fetch: Clerk public verification key.
 export CLERK__JWT_VERIFICATION_PUBLIC_KEY=<your-clerk-jwt-verification-public-key>
-# Only set false when your Clerk metadata endpoint is not HTTPS
+# Only set false when your Clerk JWKS endpoint is not HTTPS
 export CLERK__REQUIRE_HTTPS_METADATA=true
 
 cd infrastructure
@@ -105,8 +99,6 @@ docker compose up --build   # override file is merged automatically
 docker build -f infrastructure/docker/backend/Dockerfile -t chatbot-ai/backend .
 docker run --rm -p 5050:5050 \
   -e ConversationPersistence__DatabasePath=/app/App_Data/conversations.sqlite \
-  -e Clerk__Authority=<your-clerk-jwt-authority> \
-  -e Clerk__Audience=<your-clerk-audience> \
   -e Clerk__JwksUrl=<your-clerk-jwks-url> \
   -e Clerk__JwtVerificationPublicKey=<your-clerk-jwt-verification-public-key> \
   -e Clerk__RequireHttpsMetadata=true \
@@ -132,13 +124,11 @@ kubectl apply -f infrastructure/kubernetes/namespace.yaml
 
 # Optional Clerk runtime config. Apply your real values from CI/CD or cluster
 # management tooling; do not commit them to git-managed manifests.
-# This ConfigMap only carries non-secret runtime metadata plus the frontend
-# publishable key used by the browser shell. Use either Clerk__JwksUrl or
-# Clerk__JwtVerificationPublicKey when you need to override JWKS discovery.
+# This ConfigMap only carries non-secret Clerk inputs plus the frontend
+# publishable key used by the browser shell. Supply either Clerk__JwksUrl or
+# Clerk__JwtVerificationPublicKey for backend bearer-token verification.
 kubectl -n chatbot-ai create configmap clerk-config \
   --from-literal=CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key> \
-  --from-literal=Clerk__Authority=<your-clerk-jwt-authority> \
-  --from-literal=Clerk__Audience=<your-clerk-audience> \
   --from-literal=Clerk__JwksUrl=<your-clerk-jwks-url> \
   --from-literal=Clerk__JwtVerificationPublicKey=<your-clerk-jwt-verification-public-key> \
   --from-literal=Clerk__RequireHttpsMetadata=true \
@@ -258,8 +248,6 @@ docker build \
 docker run --rm -p 5050:5050 \
   -e ASPNETCORE_ENVIRONMENT=Development \
   -e ConversationPersistence__DatabasePath=/app/App_Data/conversations.sqlite \
-  -e Clerk__Authority=<your-clerk-jwt-authority> \
-  -e Clerk__Audience=<your-clerk-audience> \
   -e Clerk__JwksUrl=<your-clerk-jwks-url> \
   -e Clerk__JwtVerificationPublicKey=<your-clerk-jwt-verification-public-key> \
   -e Clerk__RequireHttpsMetadata=true \
@@ -321,9 +309,8 @@ Verify: `curl http://localhost:11434/api/tags`
 cd infrastructure
 
 # Optional Clerk configuration for the nginx-served frontend and backend token validation
+# Supply either Clerk__JwksUrl or Clerk__JwtVerificationPublicKey.
 export CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
-export CLERK__AUTHORITY=<your-clerk-jwt-authority>
-export CLERK__AUDIENCE=<your-clerk-audience>
 export CLERK__JWKS_URL=<your-clerk-jwks-url>
 export CLERK__JWT_VERIFICATION_PUBLIC_KEY=<your-clerk-jwt-verification-public-key>
 export CLERK__REQUIRE_HTTPS_METADATA=true
@@ -352,8 +339,6 @@ The `docker-compose.override.yml` file is automatically merged when you run `doc
 
 ```bash
 export VITE_CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
-export CLERK__AUTHORITY=<your-clerk-jwt-authority>
-export CLERK__AUDIENCE=<your-clerk-audience>
 export CLERK__JWKS_URL=<your-clerk-jwks-url>
 export CLERK__JWT_VERIFICATION_PUBLIC_KEY=<your-clerk-jwt-verification-public-key>
 export CLERK__REQUIRE_HTTPS_METADATA=true
@@ -387,10 +372,10 @@ All manifests live in `infrastructure/kubernetes/` and target the `chatbot-ai` n
 kubectl apply -f infrastructure/kubernetes/namespace.yaml
 
 # Optional Clerk runtime config shared by backend and frontend
+# Supply either Clerk__JwksUrl or Clerk__JwtVerificationPublicKey for backend
+# bearer-token verification.
 kubectl -n chatbot-ai create configmap clerk-config \
   --from-literal=CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key> \
-  --from-literal=Clerk__Authority=<your-clerk-jwt-authority> \
-  --from-literal=Clerk__Audience=<your-clerk-audience> \
   --from-literal=Clerk__JwksUrl=<your-clerk-jwks-url> \
   --from-literal=Clerk__JwtVerificationPublicKey=<your-clerk-jwt-verification-public-key> \
   --from-literal=Clerk__RequireHttpsMetadata=true \
@@ -458,11 +443,9 @@ kubectl delete -R -f infrastructure/kubernetes/
 | `ASPNETCORE_URLS`         | `http://+:5050`       | Kestrel listen address             |
 | `Ollama__BaseUrl`         | `http://ollama:11434` | Ollama service URL                 |
 | `ConversationPersistence__DatabasePath` | `/app/App_Data/conversations.sqlite` | Absolute SQLite file path for durable saved conversations |
-| `Clerk__Authority`        | _unset_               | Clerk JWT authority / issuer URL   |
-| `Clerk__Audience`         | _unset_               | Optional Clerk audience validation |
-| `Clerk__JwksUrl`          | _unset_               | Optional explicit Clerk JWKS URL; if unset the backend derives `/.well-known/jwks.json` from `Clerk__Authority` |
-| `Clerk__JwtVerificationPublicKey` | _unset_       | Optional explicit Clerk public verification key; use when you want fixed-key verification instead of JWKS fetch/discovery |
-| `Clerk__RequireHttpsMetadata` | `true`           | Allow non-HTTPS metadata only for local/dev |
+| `Clerk__JwksUrl`          | _unset_               | Optional Clerk JWKS URL used to fetch public verification keys for bearer-token validation |
+| `Clerk__JwtVerificationPublicKey` | _unset_       | Optional explicit Clerk public verification key; use when you want fixed-key verification instead of a JWKS fetch |
+| `Clerk__RequireHttpsMetadata` | `true`           | Allow non-HTTPS JWKS/metadata fetches only for local/dev |
 
 ### Frontend
 
@@ -471,7 +454,7 @@ kubectl delete -R -f infrastructure/kubernetes/
 | `CLERK_PUBLISHABLE_KEY`        | _unset_ | Runtime Clerk publishable key for the nginx-served frontend |
 | `VITE_CLERK_PUBLISHABLE_KEY`   | _unset_ | Clerk publishable key exposed to the Vite dev server |
 
-The current infrastructure does **not** require a Clerk secret key. The frontend only needs the publishable key, while the backend validates bearer tokens from Clerk using issuer/audience metadata plus either JWKS discovery (`Clerk__Authority` with optional `Clerk__JwksUrl`) or the optional public verification key (`Clerk__JwtVerificationPublicKey`). Prefer `Clerk__Authority` alone when Clerk's standard `/.well-known/jwks.json` endpoint is reachable, set `Clerk__JwksUrl` only when you must override that endpoint explicitly, and set `Clerk__JwtVerificationPublicKey` when you want to pin verification to a fixed public key instead of a JWKS fetch. Keep all real values out of git-managed manifests and inject them from your shell, CI/CD, or cluster tooling.
+The current infrastructure does **not** require a Clerk secret key. The frontend only needs the publishable key, while the backend validates Clerk bearer tokens using public verification material only. Configure either `Clerk__JwksUrl` or `Clerk__JwtVerificationPublicKey`; the backend validates the token signature and lifetime, then extracts the current user id from the validated `sub` claim. Set `Clerk__RequireHttpsMetadata=false` only for local or otherwise non-HTTPS JWKS/metadata endpoints. Keep all real values out of git-managed manifests and inject them from your shell, CI/CD, or cluster tooling.
 
 ### Ollama (Docker only)
 
@@ -502,7 +485,7 @@ All services are in the `chatbot-ai` namespace. DNS resolution follows the patte
 
 Example: `http://ollama:11434` in the backend configmap resolves to `ollama.chatbot-ai.svc.cluster.local:11434`.
 
-When Clerk is enabled in Kubernetes, both the backend and frontend deployments optionally read keys from a namespace-local `clerk-config` ConfigMap. Populate that object from your deployment pipeline or cluster tooling instead of committing real values to the repo. `Clerk__JwksUrl` and `Clerk__JwtVerificationPublicKey` are public verification inputs, but they should still be supplied externally so the repo only documents variable names. Keep true secrets out of this ConfigMap.
+When Clerk is enabled in Kubernetes, both the backend and frontend deployments optionally read keys from a namespace-local `clerk-config` ConfigMap. Populate that object from your deployment pipeline or cluster tooling instead of committing real values to the repo. `Clerk__JwksUrl`, `Clerk__JwtVerificationPublicKey`, and `Clerk__RequireHttpsMetadata` are the only backend auth inputs still relevant to this simplified validation flow, and the repo documents variable names only. Keep true secrets out of this ConfigMap.
 
 ---
 
