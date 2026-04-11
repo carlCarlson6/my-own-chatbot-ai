@@ -133,7 +133,7 @@ Repeat Steps 3 through 5 until one of the following is true:
 2. A true blocker exists that cannot be resolved from the repo or existing instructions.
 3. The user must make a decision on scope, behavior, or architecture.
 
-Use `code-reviewer` for an integration-focused correctness pass when the plan reaches a meaningful cross-domain milestone or final completion.
+Use `juanjo` for an integration-focused correctness pass when the plan reaches a meaningful cross-domain milestone or final completion.
 
 ---
 

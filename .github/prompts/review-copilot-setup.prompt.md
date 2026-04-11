@@ -68,7 +68,7 @@ For each category, list specific findings with the file name and the problem or 
 ### Category 4 — Agent coverage gaps
 - What developer workflows exist that have no dedicated agent?
 - Are existing agents well-scoped, or do they try to do too much?
-- Is there a project-aware code reviewer? An `isabel` contract agent? An infra agent?
+- Is there a project-aware `juanjo` reviewer? An `isabel` contract agent? An infra agent?
 
 ### Category 5 — Prompt coverage gaps
 - What recurring developer tasks have no guided prompt?

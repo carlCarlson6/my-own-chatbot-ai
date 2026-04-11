@@ -35,7 +35,7 @@ You are the orchestration agent for `my-own-chatbot-ai`. Your role is to turn a 
 | Agent | Use When |
 |---|---|
 | `isabel` | The contract must change first and then be propagated safely |
-| `code-reviewer` | You want a project-aware review of staged or unstaged changes |
+| `juanjo` | You want a project-aware review of staged or unstaged changes |
 | `osmany-development` | You need an end-to-end fallback implementation agent for work that should not be split |
 
 ## Prompt Files (Task-Specific Workflows)
@@ -112,5 +112,5 @@ Require delegated agents to report back with:
 
 - Confirm the right agents handled the right domains.
 - Confirm contract, backend, frontend, AI runtime, and infrastructure changes are consistent where applicable.
-- Use `code-reviewer` when an extra project-aware review will improve confidence on a complex change.
+- Use `juanjo` when an extra project-aware review will improve confidence on a complex change.
 - Do **not** report coordinated work as done until the integration path is coherent and the required verification has been completed.

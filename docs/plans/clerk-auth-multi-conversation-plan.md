@@ -155,7 +155,7 @@ Confirm the full feature behaves coherently across the anonymous single-chat pat
 - `danny`
   - Verify dependency order was respected: contract -> backend auth/persistence -> frontend -> infra.
   - Confirm the final flow for anonymous single chat, sign-in, conversation creation, switching, rename, delete, and reload.
-  - Route final project-aware review to `code-reviewer` for a correctness pass on the integrated changes.
+  - Route final project-aware review to `juanjo` for a correctness pass on the integrated changes.
 
 ## Acceptance Criteria
 
