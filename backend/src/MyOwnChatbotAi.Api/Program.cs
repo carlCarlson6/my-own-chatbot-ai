@@ -1,8 +1,11 @@
+using MyOwnChatbotAi.Api.Authentication;
 using Microsoft.Extensions.Options;
 using MyOwnChatbotAi.Api.Features.Conversations;
 using MyOwnChatbotAi.Api.Services.Ollama;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddClerkAuthenticationFoundation(builder.Configuration);
 
 builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection(OllamaOptions.SectionName));
 builder.Services.AddHttpClient<IOllamaClient, OllamaHttpClient>()
@@ -20,6 +23,9 @@ builder.Host.UseOrleans(silo =>
 });
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/", () => Results.Ok(new { service = "my-own-chatbot-ai-api", status = "ok" }));
 app.MapConversationEndpoints();
