@@ -18,10 +18,10 @@ The repository already has a solid baseline:
 - `/.github/instructions/orleans.instructions.md`
 - `/.github/instructions/dev-setup.instructions.md` ✅ added
 - `/.github/instructions/testing.instructions.md` ✅ added
-- `/.github/agents/chatbot-builder.agent.md` ✅ added
+- `/.github/agents/osmany-development.agent.md` ✅ added
 - `/.github/prompts/update-project-documentation.prompt.md`
 
-The `scaffold-frontend-app.prompt.md` and `add-end-to-end-feature.prompt.md` prompts were added and subsequently removed after the workflows they covered were superseded by the `chatbot-builder` agent.
+The `scaffold-frontend-app.prompt.md` and `add-end-to-end-feature.prompt.md` prompts were added and subsequently removed after the workflows they covered were superseded by the `osmany-development` agent.
 
 The current setup covers the gaps identified in the original plan. Remaining optional work:
 
@@ -75,7 +75,7 @@ Use skills later when the project has repeated multi-step workflows such as:
 
 Suggested name:
 
-- `chatbot-builder.agent.md`
+- `osmany-development.agent.md`
 
 Suggested responsibilities:
 
@@ -190,7 +190,7 @@ Give the project a reusable repo-aware implementation mode.
 
 ### File to add
 
-- `/.github/agents/chatbot-builder.agent.md`
+- `/.github/agents/osmany-development.agent.md`
 
 ### Agent behavior
 
@@ -246,7 +246,7 @@ That would add maintenance burden without much workflow benefit.
     update-project-documentation.prompt.md
     check-contract-drift.prompt.md         # optional later
   agents/
-    chatbot-builder.agent.md               ✅ added
+    osmany-development.agent.md            ✅ added
 ```
 
 ---
@@ -256,7 +256,7 @@ That would add maintenance burden without much workflow benefit.
 1. ✅ **Update `copilot-instructions.md`**
 2. ✅ **Add `dev-setup.instructions.md`**
 3. ✅ **Add `testing.instructions.md`**
-4. ✅ **Create `chatbot-builder.agent.md`**
+4. ✅ **Create `osmany-development.agent.md`**
 5. Optionally add `ollama-integration.instructions.md` once real Ollama flows are active
 6. Reassess whether skills are justified
 

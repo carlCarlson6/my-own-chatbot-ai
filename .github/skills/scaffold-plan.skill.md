@@ -83,4 +83,4 @@ If the `## Plans` section or `### WIP / In-Progress` subsection does not exist y
 Report:
 - **Plan created**: `docs/plans/<kebab-name>-plan.md`
 - **README updated**: yes/no
-- **Next step**: fill in the phases and tasks, then use the `chatbot-builder` agent to execute
+- **Next step**: fill in the phases and tasks, then use the `osmany-development` agent to execute
