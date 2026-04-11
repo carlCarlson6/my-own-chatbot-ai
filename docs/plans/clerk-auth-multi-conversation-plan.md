@@ -220,7 +220,7 @@ Simplify the backend Clerk auth flow so it validates the frontend-sent bearer to
 
 ### Planned work
 
-- `salva`
+- `salva` ✅ Done
   - Remove authority and audience validation from the backend Clerk token-validation path.
   - Keep backend validation focused on Clerk public verification material / JWKS, token signature, token lifetime, and extracting the user id from the validated token claims.
   - Preserve anonymous routes when no bearer token is sent and keep invalid or tampered bearer tokens failing predictably.

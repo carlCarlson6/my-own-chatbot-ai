@@ -6,7 +6,6 @@ namespace MyOwnChatbotAi.Api.Authentication;
 
 public sealed class ClerkJwksConfigurationManager(
     string jwksUrl,
-    string? issuer,
     bool requireHttpsMetadata) : IConfigurationManager<OpenIdConnectConfiguration>, IDisposable
 {
     private static readonly TimeSpan AutomaticRefreshInterval = TimeSpan.FromHours(12);
@@ -87,11 +86,6 @@ public sealed class ClerkJwksConfigurationManager(
         var document = await response.Content.ReadAsStringAsync(cancellationToken);
         var keySet = new JsonWebKeySet(document);
         var configuration = new OpenIdConnectConfiguration();
-
-        if (!string.IsNullOrWhiteSpace(issuer))
-        {
-            configuration.Issuer = issuer;
-        }
 
         foreach (var key in keySet.Keys)
         {

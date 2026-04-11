@@ -44,10 +44,8 @@ public static class ClerkAuthenticationExtensions
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = CurrentUserClaimTypes.UserId,
-                    ValidateIssuer = !string.IsNullOrWhiteSpace(clerkOptions.Authority),
-                    ValidIssuer = clerkOptions.Authority,
-                    ValidateAudience = !string.IsNullOrWhiteSpace(clerkOptions.Audience),
-                    ValidAudience = clerkOptions.Audience,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
                     ValidateIssuerSigningKey = clerkOptions.IsConfigured,
                     RequireSignedTokens = true,
                     ValidateLifetime = true,
@@ -63,7 +61,6 @@ public static class ClerkAuthenticationExtensions
                 {
                     options.ConfigurationManager = new ClerkJwksConfigurationManager(
                         clerkOptions.ResolvedJwksUrl,
-                        clerkOptions.Authority,
                         clerkOptions.RequireHttpsMetadata);
                 }
             })
