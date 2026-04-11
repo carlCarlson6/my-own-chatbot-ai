@@ -6,10 +6,10 @@ My own chatbot web app.
 
 - The public API contract lives in `contracts/chatbot-api.openapi.yml` and is the source of truth.
 - The checked-in implementation is a **.NET 8 Minimal API** backend under `backend/src/MyOwnChatbotAi.Api`.
-- **Conversation endpoints** (`create`, `send`, `history`) are now orchestrated by **Microsoft Orleans** (`ConversationGrain`) which delegates message generation to `IOllamaClient`.
+- **Conversation endpoints** (`create`, `send`, `history`, authenticated `list` / `rename` / `delete`) are now orchestrated by **Microsoft Orleans** (`ConversationGrain`) plus SQLite-backed persistence for signed-in saved conversations.
 - **Model listing** (`GET /api/models`) calls **Ollama** directly via the backend client layer, with an automatic fallback to the configured allowlist when Ollama is unavailable.
-- Optional **Clerk auth groundwork** is now wired across the app: the backend can validate Clerk bearer tokens when configured, the frontend can render a Clerk shell, and signed-in API calls attach the session token while anonymous chat remains available.
-- A frontend chat UI is implemented under `frontend/` — native `fetch` + Zod API client layer, Zustand store, and React components (MessageList, MessageBubble, MessageComposer, ModelSelector, ConversationHeader, ChatLayout) are all wired to the backend. The Vite dev server proxies `/api/*` to `localhost:5050`.
+- Optional **Clerk auth + saved conversation runtime** is now wired across the app: the backend can validate Clerk bearer tokens when configured, authenticated conversations persist in SQLite, and anonymous chat remains available without sign-in.
+- A frontend chat UI is implemented under `frontend/` — native `fetch` + Zod API client layer, Zustand store, and React components now include the signed-in multi-conversation sidebar, rename/delete flows, and auth-aware history loading. The Vite dev server proxies `/api/*` to `localhost:5050`.
 - Infrastructure is fully configured under `infrastructure/` — Docker (standalone + Compose) and Kubernetes manifests for all three services.
 
 ## Technologies
@@ -20,7 +20,7 @@ My own chatbot web app.
 - **OpenAPI 3.0** contract-first API design
 - **Ollama client layer** — `IOllamaClient` / `OllamaHttpClient` / `OllamaOptions` registered in the backend; model listing calls Ollama with allowlist-based fallback
 - **Microsoft Orleans** — `ConversationGrain` owns conversation state and orchestrates Ollama-backed message generation
-- **Clerk auth foundation** — optional Clerk JWT validation in the backend plus ClerkProvider/token-aware API calls in the frontend
+- **Clerk-authenticated saved conversations** — optional Clerk JWT validation in the backend, ClerkProvider/token-aware API calls in the frontend, and SQLite-backed authenticated persistence
 - **Vite + React + TypeScript** frontend with Tailwind CSS, Zustand, and Zod — **fully wired to the backend API** with a native `fetch` client, Zod-validated responses, and a Zustand store driving the chat UI
 - **Docker / Docker Compose** for containerised local and production-like runs
 - **Kubernetes** manifests targeting the `chatbot-ai` namespace
@@ -28,7 +28,7 @@ My own chatbot web app.
 ### Planned next layers
 
 - Token streaming support (deferred from MVP).
-- Clerk-backed multi-conversation persistence and sidebar UX.
+- Conversation history budget / truncation guardrails for very long saved chats.
 
 ## Repo Structure
 
@@ -101,7 +101,7 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 
 ## Optional Clerk Configuration
 
-Anonymous chat still works without Clerk. To enable the authenticated shell and backend token validation for phase 1, configure:
+Anonymous chat still works without Clerk. To enable authenticated saved multi-conversation features, configure:
 
 | Surface | Variables |
 | --- | --- |
@@ -114,7 +114,7 @@ See [`infrastructure/README.md`](infrastructure/README.md) for the Docker Compos
 ## Architecture Boundaries
 
 - `contracts/` defines the published transport contract for backend and frontend work.
-- `backend/` contains the Minimal API implementation and the stubbed conversation flow.
+- `backend/` contains the Minimal API implementation and authenticated/anonymous conversation flows.
 - `frontend/` calls only the backend API; it never talks to Ollama directly.
 - `infrastructure/` owns all Docker and Kubernetes configuration; no Dockerfiles live elsewhere.
 - Ollama is a backend-only integration boundary.
@@ -144,5 +144,5 @@ Plans that have been fully executed and are kept for historical reference.
 ## Next Steps
 
 1. Add token streaming support (deferred from MVP).
-2. Add conversation history browser / sidebar.
+2. Add conversation history budget / truncation guardrails for long saved chats.
 3. Add test infrastructure (unit + integration tests for backend slices and frontend store).

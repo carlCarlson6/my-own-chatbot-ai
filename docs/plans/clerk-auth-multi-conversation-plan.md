@@ -136,7 +136,7 @@ Add the left-hand conversation panel for signed-in users while keeping the anony
 - `danny` ✅ Done
   - Frontend execution was held until Phase 3 contract and backend conversation-management work were completed, then delegated to `aitor` against the updated backend/API baseline.
 
-## Phase 5 — AI/Runtime and Infrastructure Alignment ⏳ Pending
+## Phase 5 — AI/Runtime and Infrastructure Alignment ✅ Done
 
 Keep the AI runtime and deployment setup aligned with the authenticated multi-conversation design.
 
@@ -146,7 +146,7 @@ Keep the AI runtime and deployment setup aligned with the authenticated multi-co
   - Final review confirmed that per-user conversation loading does **not** change the current AI prompt assembly flow: authenticated history is still rehydrated in order into `ConversationGrain` and forwarded to Ollama as the full `OllamaMessage[]` conversation transcript.
   - Model-selection assumptions also remain unchanged: each conversation still keeps the model captured at initialization, and reopening/switching conversations restores that persisted model instead of introducing any cross-conversation model mixing.
   - Follow-up guardrail (non-blocking): managed histories are still replayed in full on every send/history load, so very long saved conversations will continue to increase SQLite read cost, Ollama prompt size, latency, timeout risk, and context-window pressure linearly until an explicit truncation/summarization budget is introduced in a later AI/runtime pass.
-- `vicente`
+- `vicente` ✅ Done
   - Add Clerk-related variables to Compose/Kubernetes docs and manifests as needed.
   - Keep secrets out of the repo and document variable names only.
   - Update infra docs if new services, volumes, or env vars are introduced.

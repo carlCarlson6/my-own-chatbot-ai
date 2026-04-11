@@ -2,6 +2,11 @@
 
 This folder contains all infrastructure configuration for **my-own-chatbot-ai**.
 
+The current runtime supports:
+- anonymous single-chat usage with no Clerk configuration
+- authenticated saved multi-conversation flows when Clerk runtime variables are supplied
+- SQLite-backed durable conversation storage for authenticated users
+
 _Last updated: 2026-04-11_
 
 ---
@@ -31,6 +36,7 @@ _Last updated: 2026-04-11_
 
 ```bash
 # Optional Clerk configuration for production-like containers
+# Only variable names are documented here. Do not commit Clerk secrets or real values.
 export CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
 export CLERK__AUTHORITY=<your-clerk-jwt-authority>
 # Optional when your Clerk instance requires an audience claim
@@ -113,6 +119,8 @@ kubectl apply -f infrastructure/kubernetes/namespace.yaml
 
 # Optional Clerk runtime config. Apply your real values from CI/CD or cluster
 # management tooling; do not commit them to git-managed manifests.
+# This ConfigMap only carries non-secret runtime metadata plus the frontend
+# publishable key used by the browser shell.
 kubectl -n chatbot-ai create configmap clerk-config \
   --from-literal=CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key> \
   --from-literal=Clerk__Authority=<your-clerk-jwt-authority> \
@@ -437,6 +445,8 @@ kubectl delete -R -f infrastructure/kubernetes/
 | `CLERK_PUBLISHABLE_KEY`        | _unset_ | Runtime Clerk publishable key for the nginx-served frontend |
 | `VITE_CLERK_PUBLISHABLE_KEY`   | _unset_ | Clerk publishable key exposed to the Vite dev server |
 
+The current infrastructure does **not** require a Clerk secret key. The frontend only needs the publishable key, while the backend validates bearer tokens from Clerk using issuer/audience metadata. If a future deployment adds a true secret, store it in a Kubernetes `Secret` or external secret manager rather than in git-managed manifests.
+
 ### Ollama (Docker only)
 
 | Variable        | Default    | Description                              |
@@ -466,7 +476,7 @@ All services are in the `chatbot-ai` namespace. DNS resolution follows the patte
 
 Example: `http://ollama:11434` in the backend configmap resolves to `ollama.chatbot-ai.svc.cluster.local:11434`.
 
-When Clerk is enabled in Kubernetes, both the backend and frontend deployments optionally read keys from a namespace-local `clerk-config` ConfigMap. Populate that object from your deployment pipeline or cluster tooling instead of committing real values to the repo.
+When Clerk is enabled in Kubernetes, both the backend and frontend deployments optionally read keys from a namespace-local `clerk-config` ConfigMap. Populate that object from your deployment pipeline or cluster tooling instead of committing real values to the repo. Keep true secrets out of this ConfigMap; only the current non-secret runtime variable names belong here.
 
 ---
 
