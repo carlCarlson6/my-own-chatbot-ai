@@ -1,7 +1,7 @@
 # Ollama image — extends the official image with an optional startup model pull.
 #
 # Build args:
-#   DEFAULT_MODEL  — model to pull on first start (default: llama3.2)
+#   DEFAULT_MODEL  — model to pull on first start (default: mistral)
 #                    Set to empty string "" to skip the pull.
 #
 # Usage (standalone — run from repo root):

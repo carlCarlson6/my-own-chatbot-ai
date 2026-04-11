@@ -11,7 +11,7 @@ services:
       context: ..
       dockerfile: infrastructure/docker/ollama/Dockerfile
       args:
-        DEFAULT_MODEL: llama3.2
+        DEFAULT_MODEL: mistral
     image: chatbot-ai/ollama
     container_name: chatbot-ollama
     restart: unless-stopped
