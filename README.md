@@ -124,13 +124,13 @@ See [`infrastructure/README.md`](infrastructure/README.md) for the Docker Compos
 
 ### WIP / In-Progress
 
+- [`docs/plans/clerk-auth-multi-conversation-plan.md`](docs/plans/clerk-auth-multi-conversation-plan.md) — Clerk-enabled multi-conversation feature reopened for a Clerk JWT validation correction phase: frontend bearer-token fetch/send and backend public-key/JWKS verification.
 - [`docs/plans/post-mvp-features-plan.md`](docs/plans/post-mvp-features-plan.md) — Post-MVP features: token streaming, conversation sidebar, and test infrastructure.
 
 ### Completed
 
 Plans that have been fully executed and are kept for historical reference.
 
-- [`docs/plans/clerk-auth-multi-conversation-plan.md`](docs/plans/clerk-auth-multi-conversation-plan.md) — Clerk-enabled multi-conversation feature: anonymous single chat, authenticated saved conversations, SQLite persistence, sidebar UX, rename/delete, and final integration review. All 6 phases ✅ done.
 - [`docs/plans/old/frontend-chat-ui-plan.md`](docs/plans/old/frontend-chat-ui-plan.md) — Frontend chat UI: API client (native fetch + Zod), Zustand store, 6 React components, end-to-end wiring, and UX polish. All 5 phases ✅ done.
 - [`docs/plans/old/backend-ollama-communication-plan.md`](docs/plans/old/backend-ollama-communication-plan.md) — Backend Ollama + Orleans communication: all 5 phases ✅ done.
 - [`docs/plans/old/scaffolding-plan.md`](docs/plans/old/scaffolding-plan.md) — Full-stack scaffolding: contract, backend, frontend, and Ollama + Orleans integration. All 6 steps complete; frontend wiring tracked in `docs/plans/frontend-chat-ui-plan.md`.

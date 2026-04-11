@@ -20,7 +20,7 @@ Before starting implementation work, first inspect the current repo state and co
 
 | Area | Current state | Gap for this feature |
 |---|---|---|
-| Authentication | Backend validates optional Clerk bearer tokens, the frontend can attach signed-in session tokens, and anonymous conversation routes remain open | Multi-conversation API/UI flows still need to consume the authenticated ownership model end to end |
+| Authentication | Backend/frontend auth flow exists, but backend token validation needs to be tightened to Clerk's public-key/JWKS verification model | Add a corrective phase so backend validates the bearer session token signature correctly and frontend keeps sending the Clerk session token explicitly |
 | API contract | Declares Clerk bearer auth, protected saved-conversation management routes, and shared summary metadata for authenticated persistence flows | Backend and frontend still need to implement the new list/rename/delete contract |
 | Backend conversation model | Authenticated conversations now persist in SQLite with user ownership, ordered message history, generated default titles, and summary timestamps | List, rename, and delete endpoints still need to be exposed on top of the persisted model |
 | Frontend chat UX | Current chat UI still centers on one active conversation and does not yet expose a saved-conversation sidebar | Needs multi-conversation state, sidebar UI, and auth-aware conversation-management calls |
@@ -179,3 +179,31 @@ Confirm the full feature behaves coherently across the anonymous single-chat pat
 - Manual renaming overrides the generated title without mutating historical messages.
 - Deleting a conversation removes it from the sidebar and prevents further history retrieval for that user.
 - `README.md` and any infra docs reflect the required Clerk configuration and any new persistence/runtime prerequisites.
+
+## Phase 7 — Clerk JWT Validation Correction ⏳ Pending
+
+Correct the backend/frontend auth flow so the backend validates the Clerk session token sent by the frontend using Clerk's **public key / JWKS**, which matches Clerk's token-signing model.
+
+### Research note
+
+Clerk session tokens are signed with the instance's **private key** and must be verified using the instance's **public key** (for example via Clerk JWKS or the JWKS public key). The frontend should fetch the session token through the Clerk library and send it in the `Authorization: Bearer <token>` header; the backend should validate that bearer token's signature and claims against Clerk's public verification material rather than treating this as a secret-key signing flow.
+
+### Planned work
+
+- `salva`
+  - Review the current backend Clerk token-validation path and correct it so bearer session tokens are verified using Clerk's public key / JWKS model.
+  - Confirm the backend extracts the user identity from the validated Clerk session token claims used by the conversation flows.
+  - Keep anonymous conversation routes working while ensuring invalid or tampered bearer tokens fail predictably.
+- `aitor`
+  - Review the current frontend Clerk token-fetching path and confirm the API client retrieves the session token from Clerk and sends it via the `Authorization: Bearer` header for signed-in requests.
+  - Tighten the frontend auth bridge if needed so the backend always receives the intended Clerk session token for authenticated multi-conversation actions.
+- `vicente`
+  - Update runtime/docs/config guidance for whichever Clerk public verification input the backend should use (for example JWKS URL or explicit public key), documenting variable names only and keeping secrets out of the repo.
+
+### Acceptance criteria for this phase
+
+- Backend validates the Clerk bearer session token using Clerk public verification material, not a private-key signing assumption.
+- Frontend signed-in API requests fetch the Clerk session token from the Clerk library and send it in the `Authorization` bearer header.
+- Anonymous routes remain usable without auth.
+- Invalid or tampered bearer tokens fail predictably.
+- Runtime/docs clearly describe the non-secret public verification configuration required by the backend.
