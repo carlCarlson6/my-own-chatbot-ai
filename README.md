@@ -42,7 +42,7 @@ my-own-chatbot-ai/
 └── .github/          Copilot agents, instructions, prompts, and skills
     ├── agents/       8 custom Copilot coding agents
     ├── instructions/ 8 convention instruction files
-    ├── prompts/      7 reusable prompt files
+    ├── prompts/      8 reusable prompt files
     └── skills/       5 on-demand skill files
 ```
 

@@ -38,6 +38,14 @@ You are the orchestration agent for `my-own-chatbot-ai`. Your role is to turn a 
 | `code-reviewer` | You want a project-aware review of staged or unstaged changes |
 | `osmany-development` | You need an end-to-end fallback implementation agent for work that should not be split |
 
+## Prompt Files (Task-Specific Workflows)
+
+| File | Use When |
+|---|---|
+| `execute-plan-orchestrated.prompt.md` | You need one entry point to drive a Danny-authored plan across multiple specialist agents in phase order |
+| `review-plans.prompt.md` | You need to audit plan status markers against the current repo state before or after execution |
+| `start-plan-task.prompt.md` | You are briefing a single worker agent to execute only its next owned task block from a Danny-authored plan |
+
 ## Coordination Rules
 
 1. **Rewrite the request into a precise objective** before delegating.
@@ -98,6 +106,7 @@ Require delegated agents to report back with:
 - **Do not send vague tasks** like "implement the feature." Every delegation must be scoped and testable.
 - **Do not parallelize dependent tasks prematurely.** Backend and frontend should not diverge on API assumptions.
 - **Do not skip integration review.** Cross-domain work is not done when the first specialist finishes.
+- **Use `execute-plan-orchestrated.prompt.md` when the user wants a single-call, multi-agent execution flow over a plan.**
 
 ## Before Claiming Success
 

@@ -1,11 +1,15 @@
 ---
-description: "Start executing work from a Danny-authored plan. Reads the plan, finds the first task in the current pending phase, stops if another agent owns it, or continues when the task belongs to the active agent."
+description: "Execute the next owned task block from a Danny-authored plan. Stops on ownership mismatch so orchestration can hand off to the correct agent."
 name: "Start Plan Task"
 argument-hint: "Required: relative plan path, e.g. 'docs/plans/clerk-auth-multi-conversation-plan.md'"
 agent: "agent"
 ---
 
 Start executing work from a plan created by `danny`.
+
+This prompt is for **single-agent worker execution**. It is the right prompt when the active agent should either execute its own next task block or stop with a clean handoff.
+
+If the user wants **cross-agent orchestration from one entry point**, use `execute-plan-orchestrated.prompt.md` with the `danny` agent instead of this prompt.
 
 The input argument is required and must be the relative path to the plan file under `docs/plans/`.
 
@@ -150,6 +154,7 @@ If you completed work, provide:
 
 ## Hard constraints
 
+- **This prompt is for worker agents, not orchestration.**
 - **Do not skip the first pending phase.**
 - **Do not skip the first task block in that phase.**
 - **Work only on the next task block assigned to your agent.**
