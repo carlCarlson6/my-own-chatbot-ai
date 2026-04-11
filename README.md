@@ -38,7 +38,7 @@ my-own-chatbot-ai/
 ├── frontend/         Vite + React + TypeScript SPA
 ├── infrastructure/   Docker, Docker Compose, and Kubernetes configuration
 └── .github/          Copilot agents, instructions, prompts, and skills
-    ├── agents/       3 custom Copilot coding agents
+    ├── agents/       8 custom Copilot coding agents
     ├── instructions/ 8 convention instruction files
     ├── prompts/      6 reusable prompt files
     └── skills/       5 on-demand skill files
@@ -109,6 +109,7 @@ See [`infrastructure/README.md`](infrastructure/README.md) for standalone contai
 
 ### WIP / In-Progress
 
+- [`docs/plans/clerk-auth-multi-conversation-plan.md`](docs/plans/clerk-auth-multi-conversation-plan.md) — Clerk-authenticated multi-conversation feature: auth foundation, user-owned conversation persistence, sidebar UX, rename/delete, and agent handoffs.
 - [`docs/plans/post-mvp-features-plan.md`](docs/plans/post-mvp-features-plan.md) — Post-MVP features: token streaming, conversation sidebar, and test infrastructure.
 
 ### Completed

@@ -1,6 +1,6 @@
 # Post-MVP Features Plan
 
-_Last updated: 2026-04-10_
+_Last updated: 2026-04-11_
 
 ## Goal
 
@@ -74,7 +74,7 @@ The Ollama `/api/chat` endpoint supports `"stream": true` returning newline-deli
 
 ## Phase 2 — Conversation Sidebar ⏳ Pending
 
-List, browse, and switch between multiple conversations. Requires a registry grain to track all conversation IDs.
+List, browse, and switch between multiple conversations. The detailed execution plan for the authenticated version of this feature now lives in [`docs/plans/clerk-auth-multi-conversation-plan.md`](clerk-auth-multi-conversation-plan.md), because authentication and user-owned persistence are now treated as prerequisites.
 
 ### 2.1 — Contract update
 - Add `GET /api/conversations` to `contracts/chatbot-api.openapi.yml`

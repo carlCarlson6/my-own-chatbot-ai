@@ -1,0 +1,167 @@
+# Clerk Authenticated Multi-Conversation Plan
+
+_Last updated: 2026-04-11_
+
+## Goal
+
+Add authenticated, user-owned multi-conversation chat to the app. The feature must introduce Clerk-based authentication first, then enable a left sidebar listing the signed-in user's conversations, switching between conversations with full history loading, renaming conversations, deleting conversations, and default title generation from the first user message.
+
+## Pre-Implementation Change Review
+
+Before starting implementation work, first inspect the current repo state and confirm this plan still matches reality. If commands, structure, status, or acceptance criteria changed, refresh the plan before coding.
+
+### Required review steps
+1. Read `README.md`, `contracts/chatbot-api.openapi.yml`, and the affected implementation folders.
+2. Compare the current repo against this plan: endpoints, DTOs, service registrations, status markers.
+3. Update this plan first if any step is stale or already completed.
+4. Only after that review should implementation continue.
+
+## Current Repo Reality
+
+| Area | Current state | Gap for this feature |
+|---|---|---|
+| Authentication | No auth in frontend or backend | Clerk integration required before user-owned conversations can exist |
+| API contract | Explicitly excludes auth, persistence, and multi-user features | Contract must be expanded before implementation |
+| Backend conversation model | Orleans `ConversationGrain` stores one conversation per grain with in-memory grain storage and no user ownership | User scoping, listing, rename/delete flows, and durable storage strategy are missing |
+| Frontend chat UX | Single active conversation in `chatStore.ts`, no sidebar, no auth gate | Needs multi-conversation state, sidebar UI, and auth-aware API calls |
+| Infrastructure | App stack exists for frontend/backend/Ollama only | Clerk env vars/secrets and any persistence dependency must be wired into infra/docs |
+
+## Assumptions
+
+- Clerk sign-in is required before any chat usage. There is no anonymous chat mode in this feature plan.
+- Conversations must be tied to a Clerk user and remain available after page refreshes. The current in-memory-only setup is not enough for this expectation, so persistence work is part of the plan.
+- Deleting a conversation is a hard delete of that conversation and its stored message history for the owning user.
+- The default title is derived from the **first user message only**: trim whitespace, keep the first 100 characters, and append `...` when the message exceeds 100 characters.
+- If a conversation exists before the first user message is sent, it uses a temporary fallback title such as `New conversation` until the first user message arrives.
+
+## Agent Workstreams
+
+| Agent | Primary responsibilities | Depends on |
+|---|---|---|
+| `danny` | Break work into phases, sequence handoffs, keep contract/backend/frontend/infra aligned, and run integration review | Full repo review |
+| `contract-updater` | Update OpenAPI first for auth requirements and conversation-management endpoints/schemas | Goal and UX rules confirmed |
+| `salva` | Implement backend auth integration, user-owned conversation model, endpoints, ownership checks, and title rules | Contract updates |
+| `aitor` | Integrate Clerk in the frontend, add auth gating, token-aware API client calls, multi-conversation store state, and sidebar UX | Contract + backend auth/API support |
+| `ivan` | Review AI/Ollama implications of per-conversation ownership and history loading; adjust AI-side configuration only if needed | Backend conversation flow decisions |
+| `vicente` | Add Clerk env/config wiring, secret documentation, container/Kubernetes updates, and any persistence-related infrastructure changes | Backend/frontend runtime requirements |
+
+## Recommended Execution Order
+
+1. Update the contract and document auth + conversation management behavior.
+2. Add backend Clerk authentication and user identity propagation.
+3. Add durable, user-owned conversation persistence and conversation-management endpoints.
+4. Integrate Clerk in the frontend and ship the sidebar/multi-conversation UX.
+5. Wire runtime configuration and secrets in infrastructure.
+6. Run cross-agent integration review and verification.
+
+## Phase 1 — Contract and Clerk Auth Foundation ⏳ Pending
+
+Establish authentication as a required platform capability before implementing the conversation sidebar itself.
+
+### Planned work
+
+- `contract-updater`
+  - Add an auth scheme to `contracts/chatbot-api.openapi.yml` for protected conversation endpoints.
+  - Add `401` / `403` responses where conversation routes require an authenticated user.
+  - Document user-scoped conversation ownership behavior in endpoint descriptions.
+- `salva`
+  - Integrate Clerk token validation into the backend request pipeline.
+  - Introduce a backend abstraction for the authenticated user id/claims used by conversation flows.
+  - Ensure protected conversation endpoints fail predictably when auth is missing or invalid.
+- `aitor`
+  - Add Clerk to the frontend shell (`ClerkProvider`, sign-in/sign-out, session awareness).
+  - Gate the chat experience behind authentication.
+  - Attach Clerk auth tokens to backend API calls.
+- `vicente`
+  - Document and wire the frontend publishable key and backend auth configuration into local/dev/deployment environments.
+
+## Phase 2 — User-Owned Conversation Persistence ⏳ Pending
+
+Replace the current single-session-only conversation ownership model with a user-scoped conversation store that supports listing, history reload, rename, and delete.
+
+### Planned work
+
+- `salva`
+  - Define the canonical backend model for a user-owned conversation summary and message history.
+  - Choose and implement a persistence approach that survives refreshes and supports efficient list/history lookups.
+  - Add ownership checks so one user cannot access another user's conversations.
+  - Update title-generation logic so the first user message becomes the default title when no manual title exists.
+- `ivan`
+  - Confirm that loading prior messages into the active conversation preserves the AI context expected by Ollama-backed chat flows.
+  - Flag any AI/runtime performance concerns if larger persisted histories need truncation or summarization later.
+- `vicente`
+  - If a new persistence dependency is introduced, add the required container/Kubernetes/env wiring and document it.
+
+## Phase 3 — Conversation Management API Surface ⏳ Pending
+
+Add the backend contract and endpoints required to browse, rename, delete, and reopen conversations.
+
+### Planned work
+
+- `contract-updater`
+  - Add `GET /api/conversations` returning user-scoped `ConversationSummary[]`.
+  - Add `PATCH /api/conversations/{conversationId}` for renaming.
+  - Add `DELETE /api/conversations/{conversationId}` for deletion.
+  - Update existing create/send/history schemas if they must carry additional summary metadata.
+- `salva`
+  - Implement the new endpoints in feature slices under `backend/src/MyOwnChatbotAi.Api/Features/Conversations/`.
+  - Keep `GET /api/conversations/{conversationId}/history` owner-aware and auth-protected.
+  - Return consistent `404`, `401`, and `403` behavior for unknown, unauthenticated, and unauthorized access.
+
+## Phase 4 — Frontend Sidebar and Multi-Conversation UX ⏳ Pending
+
+Add the left-hand conversation panel and teach the frontend to manage multiple saved conversations for the signed-in user.
+
+### Planned work
+
+- `aitor`
+  - Extend the frontend API client and Zod schemas for list/rename/delete operations.
+  - Refactor the Zustand store to hold:
+    - `conversations`
+    - `activeConversationId`
+    - active conversation messages/history
+    - loading/error state for sidebar operations
+  - Add a left sidebar showing the user's conversations.
+  - Clicking a conversation loads its history and activates it.
+  - Add a "New conversation" action that clears the active panel and starts a fresh conversation on the next send.
+  - Add edit and delete buttons on each conversation row.
+  - Preserve the existing chat layout behavior on small screens with a responsive/collapsible sidebar treatment.
+- `danny`
+  - Ensure frontend sequencing waits for backend contract/auth readiness before UI wiring begins.
+
+## Phase 5 — AI/Runtime and Infrastructure Alignment ⏳ Pending
+
+Keep the AI runtime and deployment setup aligned with the authenticated multi-conversation design.
+
+### Planned work
+
+- `ivan`
+  - Review whether per-user conversation loading changes any prompt-assembly, model-selection, or context-window assumptions.
+  - Recommend AI-focused guardrails only if history growth introduces quality or performance risk.
+- `vicente`
+  - Add Clerk-related variables to Compose/Kubernetes docs and manifests as needed.
+  - Keep secrets out of the repo and document variable names only.
+  - Update infra docs if new services, volumes, or env vars are introduced.
+
+## Phase 6 — Integration Review and Verification ⏳ Pending
+
+Confirm the full feature behaves coherently across auth, backend ownership rules, frontend UX, and deployment/runtime configuration.
+
+### Planned work
+
+- `danny`
+  - Verify dependency order was respected: contract -> backend auth/persistence -> frontend -> infra.
+  - Confirm the final flow for sign-in, conversation creation, switching, rename, delete, and reload.
+  - Route final project-aware review to `code-reviewer` for a correctness pass on the integrated changes.
+
+## Acceptance Criteria
+
+- Clerk authentication is required before the chat UI can be used.
+- Backend conversation endpoints are user-scoped and reject unauthenticated or unauthorized access correctly.
+- A signed-in user can create multiple conversations and see them in a left sidebar.
+- Clicking a conversation loads its full saved message history into the active chat view.
+- Each sidebar conversation item supports rename and delete actions.
+- The default conversation title is derived from the first user message, limited to 100 characters, with `...` appended when truncated.
+- Manual renaming overrides the generated title without mutating historical messages.
+- Deleting a conversation removes it from the sidebar and prevents further history retrieval for that user.
+- `README.md` and any infra docs reflect the required Clerk configuration and any new persistence/runtime prerequisites.
